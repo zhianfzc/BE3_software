@@ -1,0 +1,14 @@
+Import('RTT_ROOT')
+Import('rtconfig')
+from building import *
+
+cwd     = GetCurrentDir()
+src = Split('''
+''')
+
+LIBPATH = [cwd] 
+LIBS = ['npu', 'dpu', 'xm_nn', 'xmia', 'fdr', 'facnn', 'fpcnn', 'fr', 'xmia_dcv', 'xmia_fda_cnn', 'xmia_fd_cnn', 'xmia_sgm', 'xmia_spc', 'xmia_comm']
+
+group = DefineGroup('Libs', src, depend = [''], LIBS = LIBS, LIBPATH=LIBPATH)
+
+Return('group')

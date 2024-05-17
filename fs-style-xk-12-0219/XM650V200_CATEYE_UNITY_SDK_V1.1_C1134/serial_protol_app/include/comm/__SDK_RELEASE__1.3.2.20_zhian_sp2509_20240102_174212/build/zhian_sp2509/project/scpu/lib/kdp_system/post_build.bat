@@ -1,0 +1,1 @@
+copy /y .\Objects\kdp_system.lib ..\output

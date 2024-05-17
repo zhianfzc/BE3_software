@@ -1,0 +1,12 @@
+.\objects\kdp_list.o: ..\..\..\..\scpu\framework\src\kdp_list.c
+.\objects\kdp_list.o: ..\..\..\..\scpu\framework\include\framework/kdp_list.h
+.\objects\kdp_list.o: ..\..\..\..\common\include\types.h
+.\objects\kdp_list.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\kdp_list.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\kdp_list.o: ..\..\..\..\scpu\framework\include\framework/utils.h
+.\objects\kdp_list.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\kdp_list.o: ..\..\..\..\common\include\dbg.h
+.\objects\kdp_list.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\kdp_list.o: ..\..\..\..\common\include\ipc.h
+.\objects\kdp_list.o: ..\..\..\..\common\include\model_type.h
+.\objects\kdp_list.o: ..\..\..\..\common\include\model_res.h

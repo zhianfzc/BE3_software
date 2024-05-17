@@ -1,0 +1,12 @@
+.\objects\kdp_crc.o: ..\..\..\..\scpu\drivers\system\kdp_crc.c
+.\objects\kdp_crc.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\kdp_crc.o: ..\..\..\..\scpu\drivers\include\kdp_crc.h
+.\objects\kdp_crc.o: ..\..\..\..\common\include\types.h
+.\objects\kdp_crc.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\kdp_crc.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\kdp_crc.o: ..\..\..\..\scpu\drivers\include\kdp_sha1.h
+.\objects\kdp_crc.o: ..\..\..\..\common\include\dbg.h
+.\objects\kdp_crc.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\kdp_crc.o: ..\..\..\..\common\include\ipc.h
+.\objects\kdp_crc.o: ..\..\..\..\common\include\model_type.h
+.\objects\kdp_crc.o: ..\..\..\..\common\include\model_res.h

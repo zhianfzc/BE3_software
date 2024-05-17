@@ -1,0 +1,13 @@
+Import('RTT_ROOT')
+Import('rtconfig')
+from building import *
+
+cwd     = GetCurrentDir()
+src = Split('''
+''')
+
+LIBPATH = [cwd]
+LIBS = Glob('*.a')
+group = DefineGroup('Libs', src, depend = [''], LIBS = LIBS, LIBPATH=LIBPATH)
+
+Return('group')

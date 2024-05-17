@@ -1,0 +1,12 @@
+.\objects\scu_ipc.o: ..\..\..\..\common\src\scu_ipc.c
+.\objects\scu_ipc.o: ..\..\..\..\scpu\device\include\Kneron\kneron_mozart.h
+.\objects\scu_ipc.o: F:\Users\fu\AppData\Local\Arm\Packs\ARM\CMSIS\5.9.0\CMSIS\Core\Include\core_cm4.h
+.\objects\scu_ipc.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\scu_ipc.o: F:\Users\fu\AppData\Local\Arm\Packs\ARM\CMSIS\5.9.0\CMSIS\Core\Include\cmsis_version.h
+.\objects\scu_ipc.o: F:\Users\fu\AppData\Local\Arm\Packs\ARM\CMSIS\5.9.0\CMSIS\Core\Include\cmsis_compiler.h
+.\objects\scu_ipc.o: F:\Users\fu\AppData\Local\Arm\Packs\ARM\CMSIS\5.9.0\CMSIS\Core\Include\cmsis_armcc.h
+.\objects\scu_ipc.o: F:\Users\fu\AppData\Local\Arm\Packs\ARM\CMSIS\5.9.0\CMSIS\Core\Include\mpu_armv7.h
+.\objects\scu_ipc.o: F:\Users\fu\AppData\Local\Arm\Packs\ARM\CMSIS\5.9.0\Device\ARM\ARMCM4\Include\system_ARMCM4.h
+.\objects\scu_ipc.o: ..\..\..\..\scpu\drivers\include\io.h
+.\objects\scu_ipc.o: ..\..\..\..\common\include\base.h
+.\objects\scu_ipc.o: ..\..\..\..\common\include\scu_ipc.h

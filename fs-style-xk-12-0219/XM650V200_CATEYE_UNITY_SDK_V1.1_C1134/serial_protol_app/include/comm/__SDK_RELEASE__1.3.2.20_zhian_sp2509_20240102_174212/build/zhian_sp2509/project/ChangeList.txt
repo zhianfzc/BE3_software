@@ -1,0 +1,580 @@
+#############################################################
+### 0.5.5.0.2020422 Kneron Kl520 release(Update recommended)
+#############################################################
+-Add CRC check for model update in OTA flow.
+-Create model, ui and fw info backup mechanism in OTA.
+-Create 64MB flash read/write driver.
+-Rearrange flash memory layout for 64MB flash application.
+
+#############################################################
+### 0.5.4.0.2020422 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions:
+-Update new model.
+-Update liveness algorithm.
+-Add Partial model update mechanism
+-Created cmd 0xFA, for model size calculation and send to host
+-Host send fw_info size to kl520
+
+#############################################################
+### 0.5.3.0.2020407 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions:
+-Support two(slave) different fw_scpu.bin in flash_fdfr_image.bin.
+-Support enable/disable the OTA and snapshot functions in .cfg file.
+-Update new model.
+-Update liveness algorithm.
+-New api for switch active partition.
+-Modify the scatter file to gain more code size. 
+-Refactor some flash/ota/com_bus files.
+-Customized OTA UI update mechanism and send bin size from host to kl520.
+
+#############################################################
+### 0.5.2.0.20200318 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions:
+-Support OTA update model/UI related.
+-New API to disable log.
+-Update new model.
+-Liveness algorithm update.
+
+Issue fixes:
+-Fixed the issue of display switch between camera preview and dp_draw. 
+-Modify spi_receive mechanism
+-Modify flash read mechanism
+
+#############################################################
+### 0.5.1.0.20200309 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions:
+-Update snapshot api.
+-Update model.
+-Liveness algorithm update.
+
+Issue fixes:
+-Fixed bBox error on FACE_REG_CHECK_DIST.
+-Fixed a registered_offsetX/registered_offsetX calibration error.
+-Fixed the RGB Led value will be reset after user set.
+
+#############################################################
+### 0.5.0.10.20200226 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions:
+-Added fdfr result on snapshot.
+-Added a new model.
+-Added a new api "kl520_api_ota_status_get" to get ota thread status.
+-Added mutex to protect OTA thread.
+-Enhanced the result of face recognition(No face/ Invalid). 
+-Support children(2~5 years old) face add/recognition.
+-Increase the chance of real person when face recognition.
+
+Verification:
+- Run 2000+ times on console mode.(command 31)
+
+#############################################################
+### 0.4.6.0.20200218 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions:
+-Enhance the correctness with the partial-hide face.
+
+Issue fixes:
+-Fixed the lcm preview error with nir data.
+-Fixed the return type of delete user.
+-Fixed the backlight issue.
+
+#############################################################
+### 0.4.5.0.20200211 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions:
+-Update the e2e library.
+
+Issue fixes:
+-Fixed the display will show camera preview when it open.
+-Fixed the system crash issue.
+-Remove some compile warring.
+
+
+#############################################################
+### 0.4.4.0.20200209 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Updated liveness algorithm and fine tune camera sensor setting.
+- Updated models
+- Enabling KL520_QUICK_BOOT will help reduce the time required for the first face recognition to 1.1 ~ 1.2 seconds.
+- Supported interruptible sample_face_add and sample_face_recognition.
+- Updated programming tool.
+- Updated lcdc driver and mzt panel driver.
+- Added kdp_camera_set_mirror / kdp_camera_set_flip.
+- Reorganzied display api.
+- Changed the dafault function order when MEA.SURE_RECOGNITION and MEASURE_WITH_TOUCH are turned on
+- Added com_type_buffer and reduce 8KB SDRAM.
+- Declared a buufer for com_bus and OTA share area.
+- Declared gu8OTA_Rx_buffer and gu8OTA_Tx_buffer as pointer and remove original size from SDRAM.
+- Reduced SPI buffer size and release 4196 Bytes to SDRAM.
+- Removed FLASH_RX_BUFFER_SIZE and FLASH_TX_BUFFER_SIZE macro.
+- Modified CFG_SSP1_TX_DMA_ENABLE and CFG_SSP1_RX_DMA_ENABLE macro to 0 and remove them during buffer declare and initialize.
+- Resolve Uart OTA missing commamd
+- Changed the directory where the sample_app_xxx source files are located from /build/datang/user to /scpu/share
+- Renamed the adc-related function
+- Deleted V2K_ENABLE
+- Added DISPLAY_FIT
+- Added preproc/postproc for rgb/nir
+- Updated snapshot index for NIR/RGB
+- Updated nir preview.
+
+Issue fixes:
+- Fixed user io on board.
+- Fixed sample console about width/height on MZT_480X272 display.
+- Fixed QUICK_BOOT error due to abnormally setting face_non_move_cnt.
+- Fixed bug : Face_add and face_recognition_test are not work when USE_SCORE_JUDGEMENT is turned on.
+- Fixed engineering mode API Updated posproc_nir/posproc_rgb for mzt_480x272.
+- Fixed adv snapshot info.
+
+#############################################################
+### 0.4.3.0.20200120 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Update LM model
+- Resolve Uart2 snapshot fail problem 1.Adjust Uart Tx and Rx to pad D13 and D14 2.Adjust baud rate to 921600
+- Update ncpu liveness algorithm
+- refractor nir aec code and add init nir gain variable to nir liveness.
+- Open up rgb led when no face after 2 sec, stop tuning light after open led.
+
+Issue fixes:
+
+
+#############################################################
+### 0.4.2.0.20200118 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Fix errors: KFace database operation errors
+- Reduce boot time - including DB comparison, touch drive delay and LCM driver delay
+- Update liveness algorithm
+- Create dbg_msg_user for the user to control whether or not to log. 
+- Add api kl520_api_log_user_enable / kl520_api_log_user_disable
+
+Issue fixes:
+- Fix lm not working
+- Flash overlap between setting area and image information area. 
+
+
+#############################################################
+### 0.4.1.6.20200117 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Change to new Fr model
+- Shorter fdr process time
+- Shorter recognition time
+- Smaller model
+- Send busy event before calling face_close
+- Increase the capacity of snapshot images to 40
+- Swap setting area and snapshot imagea area allocated in flash
+- Add dbg_msg_user allows users to control the log switch
+
+Issue fixes:
+- Face add outside will cause face recognition error
+- Update check lm 5 point if BOUNDINGBOX_CHECK_LM is opened
+- Fix LCD_FDR_OVERLINE not working when BOUNDINGBOX_CHECK_LM is disable
+- Fine tune nir liveness and replace projection value.
+- If face recognition is in progress, the event about the result of face recognition should not sent out when face_close command is emitted.
+
+
+
+
+#############################################################
+### 0.4.1.0.20200115 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Update new Fd model
+- Update JLink programmer
+
+Issue fixes:
+- Fix the problem that the system will crash when the nir lm score is too low
+
+Verification:
+- Run 1000+ times on console mode.(command 32-1)
+
+
+#############################################################
+### 0.4.0.20200114 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Add OTA related events and functions for communicate.
+- Add api "kl520_api_face_liveness_set/get_timeout"
+- Optimize the erase time of snapshot function.
+- Set event "KL520_DEVICE_FLAG_ERR" while device error or no device.
+- Reference the illuminance value from adc light sensor to avoid the red led turn on in wrong situation.
+- Fine tune liveness algorithm.
+- Remove scpu compile warrning.
+- Remove redundant macro define and code.
+- Reduce code size.
+
+Issue fixes:
+- Fixed delay_ms crash on multi-thread.
+- Fixed flash crush issue.
+
+Verification:
+- Run 1000+ times on console mode.(command 32-1)
+
+#############################################################
+### 0.3.2.5.20191219 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+Liveness algorithm updated
+- Add API "kl520_api_face_liveness" for doing face liveness once;
+- Display and backlight does not turned off when camera is opened
+- Draw db box by kl520_api_face_notify when call kl520_api_face_recognition;
+
+Issue fixes:
+- Solve the problem that LCD_FDR_OVERLINE cannot be used
+- Protect kl520_api_face_close when called at the same time;
+- Solve the problem of rectangle flickering after fdr pass.
+- Fixed length error on snapshot_record function
+- Fix the error of Flash to DDR.
+
+Verification:
+- Run 3000+ times on console mode.(command 32-1)
+- Run 3000+ times on console mode.(command 55)
+
+
+#############################################################
+### 0.3.0.0.20191211 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Modify SPL to reduse code size.
+- New status "KL520_FACE_NOFACE" is added for face recognition.
+- New API and flash space to access customer info(config file).
+- Add snapshot functions and APIs.
+- Add I2C interrupt mode(disable as default).
+- Change hint box color to red when face add return face exist.
+- Adjust SPI data receive mechanism
+	a. prepare Rx backup avoid data miss
+	b. provide command analyze method to avoid data miss in some cases
+	c. Rx thread use Rx_counter polling case
+- Liveness algorithm updated on datang board v3.
+- NIR and RGB led turned on datang board v3.
+
+Issue fixes:
+- I2C mutex protect is improved to avoid touch crash.
+- Dynamic adjust the fdfr thread priority to release the source. 
+- Fix the error of ddr to flash.
+
+Verification:
+- Run 3000+ times on console mode.(command 32-1)
+- Run 3000+ times on console mode.(command 55)
+
+#############################################################
+### 0.3.0.0.00191203 Kneron Kl520 release(Update recommended)
+#############################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- The detection and resistance of NIR black-and-white paper attack are added.(turned off as default).
+- The weight and threshold of RGB / NIR fr face feature comparison can dynamically adjusted.
+- The algorithm to resist the mixed attack of real and fake people(or picture) is added.
+- OTA transmission has been completed with fixed pattern confirmation.
+- Smart rgb led lighting mechanism.
+- New status "KL520_FACE_DB_FAIL" will return when the detected face is not in database.
+- Use the central point of RGB bounding box to detect if the fd result is in the panel display range. 
+
+Issue fixes:
+- Modified the setting method of RGB AEC ROI when RGB FD cannot detect face
+- Modified the conditions for opening RGB LED
+- Fixed the error of display LCM driver when filling the color of the screen
+- Changed behavior when closing display
+
+Verification:
+- More sets are tested with dark environment.
+
+
+#######################################################
+### 0x00191119 Kneron Kl520 release(Update recommended)
+#######################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Code size reduction : use USE_KDP_CAMERA to exclude code of v2k framework
+- Added Snapshot API including fdfr image catch, saving flash, switch sim at run-time
+- Added OTA for NIR and RGB upload to PC via Uart
+- Added FLM tool which allow you to download bin file by JLink in Keil directly.
+- Added calculated fps (CALC_DISPLAY_FPS, CALC_FDFR_FPS)
+- Added new model FDSSD support
+
+Issue fixes:
+- Fixed the green screen proplem(cmd 30,31,36,37) and horizontal stripes proplem(cmd 55)
+- Changed the behavior of 1 face add function to not check distance and movement
+- Changed the behavior of 5 face add function, only checking liveness on the first face
+- Fixed hint box display error
+- Added multiple instance support for I2C when USE_FRAME_BUFFER_DRIVER is enabled
+- Fixed RGB LED open once bug.
+- Fixed the tearing screen problem by increasing priority
+
+Verification:
+- Run 3000+ times on console mode.(command 32-1)
+
+#######################################################
+### 0x00191107 Kneron Kl520 release(Update recommended)
+#######################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- 5 Face UI hint improve
+- Improve wakeup time
+- Improve face add and face recognition
+
+Issue fixes:
+- The time gap between backlight light up and display show. 
+
+Verification:
+
+
+#######################################################
+### 0x00191109 Kneron Kl520 release(Update recommended)
+#######################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- SPI 100MHZ enable.
+- Skip some bad pose event.
+
+Issue fixes:
+- Hint box blink when 1-face add.
+- Timeout invaild when user's face is always too_far.
+- User_id didn't clear well when 5-faces add failed.
+- When 5-faces add is success, keep the cross hint until kl520_api_face_close().
+
+Verification:
+- Run 5000+ times on console mode.(command 55)
+
+#######################################################
+### 0x00191107 Kneron Kl520 release(Update recommended)
+#######################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- 5 Face UI hint improve
+- Improve wakeup time
+- Improve face add and face recognition
+
+Issue fixes:
+- The time gap between backlight light up and display show. 
+
+Verification:
+
+
+#######################################################
+### 0x00191106 Kneron Kl520 release(Update recommended)
+#######################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- 5 Face add flow
+- Fine-tune Liveness
+- Turn on RGB LED with max value
+
+Issue fixes:
+
+Verification:
+- Run 1000+ times on console mode.(command 55)
+
+#######################################################
+### 0x00191104 Kneron Kl520 release(Update recommended)
+#######################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Reduse code size
+- Update debug message  
+
+Issue fixes:
+
+Verification:
+- Run 1000+ times on console mode.(command 30)
+- Run 1000+ times on console mode.(command 55)
+
+#######################################################
+### 0x00191102 Kneron Kl520 release(Update recommended)
+#######################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Enable frame buffer driver
+- Update LW3D/Liveness algo
+- Update flash secto erase
+- Auto LEB power/on on RBG CAM 
+
+Issue fixes:
+- Fixed datang test (command 55)
+- Fixed fdfr about KL520_CAMERA_SKIP_MS
+- Fixed fdfr about KL520_FDFR_SKIP_MS
+- Fixed fdfr about KL520_FDFR_KEEP_MS
+
+Verification:
+- Run 1000+ times on console mode.(command 31)
+- Run 1000+ times on console mode.(command 55)
+
+#######################################################
+### 0x00191030 Kneron Kl520 release(Update recommended)
+#######################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Added fdfr skip frame setting(KL520_FDFR_NUM_FRAME_SKIP)
+- Added fdfr keep result setting(KL520_FDFR_NUM_FRAME_KEEP)
+ -Added Face DB　is full, return KL520_FACE_FULL
+- Added frame buffer driver for testing
+- Added LW3D with sun light architecture
+- Update LW3D Parameter
+- Update SPI driver and API
+- Console item
+	- Show the console menu when an empty line is entered
+	- Show timer when fdfr
+
+Issue fixes:
+- Fixed rgb led blink once when power on
+- Fixed rgb led blink once when power off at DATANG_V2_BOARD
+- Fixed mutex about update rgb image
+
+Verification:
+- Run 3500+ times on console mode.(command 32)
+
+#######################################################
+### 0x00191023 Kneron Kl520 release(Update recommended)
+#######################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Adjusted LCD_DISPLAY_X_OFFSET / LCD_FDR_OVERLINE
+- Changed NIR_X_OFFSET / NIR_Y_OFFSET
+- Changed sc132gs framerate from 50 to 25 and agc setting
+- Added TYPE_LCM_DRAW_CAMERA in order to adapted LW3D
+- Added clock start/stop to mipi csi2rx driver
+- Updated liveness and camera function in SCPU
+- Added LIVENESS_VERSION macro for different liveness algorithm
+- Added V2_POWERFUL_VERSION macro for different V2 board
+- Execute ddr_init after load_ncpu_fw is finished
+
+- SSP_SPI modify
+	-- Modify slave GPIO setting 
+	-- Create XOR calculation for Datang 
+	-- Create GPIO API for slave request to master
+	-- Add debug message for Tx buffer 
+	-- Remove dummy code
+
+- kl520 api
+	-- Add new api "kl520_api_face_query_all", it will return the total number of face_id and all existed face_id.
+	-- Modify the input of api "kl520_api_face_query" from current_user_idx to user_id.
+	
+- Console item
+
+Issue fixes:
+- Fixed NIR camera pressing 
+- Update power manager, set pwr_button_wakeup to 1 as the default.
+
+Verification:
+
+
+
+#######################################################
+### 0x00191019 Kneron Kl520 release(Update recommended)
+#######################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- With bootloader ver1009, scpu will be responsible for loading ncpu from flash then wake it up.
+- Reduce face recognition time from 5 seconds to 2 seconds
+- Added Datang V2 board support.
+	-- sc132 sensor flip is configurable
+	-- Make y_axis no inverse for datang v2 board.
+- Added adc driver support
+- Added ssp slave driver support
+- Adjusted optimization level from O1 to O3.
+- Modified all pwm freq to 1/2000000ns.
+
+- IO extender
+	-- added lcm power off to init process.
+
+- kl520 api
+	-- Added kl520_api_adc_xxxx series
+	-- Added kl520_api_SSP_SPI1_xxxx series
+	-- Modified kl520_api_lcm_set_backlight
+
+- Console item
+	-- Added sample_stability_add_user
+	-- Added sample_get_adc
+
+Issue fixes:
+- Added protection in lcm-camera drawing functions.
+- Added 200us delay right after turn on camera 1.8v for i2c levelshift power stable issue.
+- Adjusted the lcm setting delay time after sleeping from 100us to 10ms for issue of wrong lcm setting in O3 mode.
+
+
+Verification:
+- Run 6000+ times on console mode.(command 31)
+
+#######################################################
+### 0x00191008 Kneron Kl520 release(Update recommended)
+#######################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Added sample_stability_recognition for "face recognition" verification
+- Added sample_stability_all to verify "liveness detection" function with touch support
+- Added 50MHz/quad mode
+- Added kdp_camera.c The camera related api used in fdfr/lw3d in the future will be implemented in this file.
+- Added kdp_app_register_camera_procs to register the callback function that applib will use.
+- Updated hint box with the ability to change colors when face recognition is successful
+- Updated i2c master driver : add read/write transfer projection, clock-gating control
+- Updated event system : Integrate events used by the function kl520_api_get_touch_event() with events used by kl520_api_get_event()
+- Adjusted dma / gpio timeout
+- Added some kl520 api
+-- kl520_api_touch_register_hook
+-- kl520_api_touch_is_started
+
+Issue fixes:
+- I2C read/write conflict
+- Stress tests (continue touching panel rapidly) lead to failure.
+- Face distance hint
+
+
+Verification:
+- Run 3000+ / 9000+ times on console mode.(command 32)
+
+##################################################################
+### 0x00190926 2019-09-27 Kneron Kl520 release(Update recommended)
+##################################################################
+Feature additions, Issue fixes, Verification
+
+Feature additions:
+- Added OTA for fw upgrad via Uart2(command 31)
+- Added model chechsun
+- Added LW3D distance improvement about 20 ~70 cm
+- Added drawing hint box on LCM screen
+- Added device id(command 46)
+- Added some kl520 api
+-- kl520_api_timer_tick_reset
+-- kl520_api_touch_get_device_id
+
+Issue fixes:
+- Fixed un-terminating threads and limiting events
+- Fixed crash issue(gpio, dma)
+
+Verification:
+- Run 5000+ times on console mode.(command 30)
+

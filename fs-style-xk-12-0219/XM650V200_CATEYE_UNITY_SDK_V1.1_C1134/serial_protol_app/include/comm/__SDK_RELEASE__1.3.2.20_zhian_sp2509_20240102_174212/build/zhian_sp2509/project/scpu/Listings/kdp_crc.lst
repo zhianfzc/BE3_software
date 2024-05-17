@@ -1,0 +1,3596 @@
+L 1 "..\..\..\..\scpu\drivers\system\kdp_crc.c"
+N/*
+N * Kneron crc, checksum & sha1 integrity check value generation
+N *
+N * Copyright (C) 2018 Kneron, Inc. All rights reserved.
+N *
+N */
+N
+N#include <string.h>
+L 1 "F:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h" 1
+N/* string.h: ANSI 'C' (X3J11 Oct 88) library header, section 4.11 */
+N/* Copyright (C) Codemist Ltd., 1988-1993.                        */
+N/* Copyright 1991-1993 ARM Limited. All rights reserved.          */
+N/* version 0.04 */
+N
+N/*
+N * RCS $Revision$
+N * Checkin $Date$
+N */
+N
+N/*
+N * string.h declares one type and several functions, and defines one macro
+N * useful for manipulating character arrays and other objects treated as
+N * character arrays. Various methods are used for determining the lengths of
+N * the arrays, but in all cases a char * or void * argument points to the
+N * initial (lowest addresses) character of the array. If an array is written
+N * beyond the end of an object, the behaviour is undefined.
+N */
+N
+N#ifndef __string_h
+N#define __string_h
+N#define __ARMCLIB_VERSION 5060037
+N
+N#define _ARMABI __declspec(__nothrow)
+N
+N  #ifndef __STRING_DECLS
+N  #define __STRING_DECLS
+N
+N    #undef __CLIBNS
+N
+N    #ifdef __cplusplus
+S        namespace std {
+S        #define __CLIBNS std::
+S        extern "C" {
+N    #else
+N      #define __CLIBNS
+N    #endif  /* __cplusplus */
+N
+N#if defined(__cplusplus) || !defined(__STRICT_ANSI__)
+X#if 0L || !0L
+N /* unconditional in C++ and non-strict C for consistency of debug info */
+N  #if __sizeof_ptr == 8
+X  #if 4 == 8
+S    typedef unsigned long size_t;   /* see <stddef.h> */
+N  #else
+N    typedef unsigned int size_t;   /* see <stddef.h> */
+N  #endif
+N#elif !defined(__size_t)
+X#elif !0L
+S  #define __size_t 1
+S  #if __sizeof_ptr == 8
+S    typedef unsigned long size_t;   /* see <stddef.h> */
+S  #else
+S    typedef unsigned int size_t;   /* see <stddef.h> */
+S  #endif
+N#endif
+N
+N#undef NULL
+N#define NULL 0                   /* see <stddef.h> */
+N
+Nextern _ARMABI void *memcpy(void * __restrict /*s1*/,
+Xextern __declspec(__nothrow) void *memcpy(void * __restrict  ,
+N                    const void * __restrict /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * copies n characters from the object pointed to by s2 into the object
+N    * pointed to by s1. If copying takes place between objects that overlap,
+N    * the behaviour is undefined.
+N    * Returns: the value of s1.
+N    */
+Nextern _ARMABI void *memmove(void * /*s1*/,
+Xextern __declspec(__nothrow) void *memmove(void *  ,
+N                    const void * /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * copies n characters from the object pointed to by s2 into the object
+N    * pointed to by s1. Copying takes place as if the n characters from the
+N    * object pointed to by s2 are first copied into a temporary array of n
+N    * characters that does not overlap the objects pointed to by s1 and s2,
+N    * and then the n characters from the temporary array are copied into the
+N    * object pointed to by s1.
+N    * Returns: the value of s1.
+N    */
+Nextern _ARMABI char *strcpy(char * __restrict /*s1*/, const char * __restrict /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strcpy(char * __restrict  , const char * __restrict  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * copies the string pointed to by s2 (including the terminating nul
+N    * character) into the array pointed to by s1. If copying takes place
+N    * between objects that overlap, the behaviour is undefined.
+N    * Returns: the value of s1.
+N    */
+Nextern _ARMABI char *strncpy(char * __restrict /*s1*/, const char * __restrict /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strncpy(char * __restrict  , const char * __restrict  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * copies not more than n characters (characters that follow a null
+N    * character are not copied) from the array pointed to by s2 into the array
+N    * pointed to by s1. If copying takes place between objects that overlap,
+N    * the behaviour is undefined.
+N    * Returns: the value of s1.
+N    */
+N
+Nextern _ARMABI char *strcat(char * __restrict /*s1*/, const char * __restrict /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strcat(char * __restrict  , const char * __restrict  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * appends a copy of the string pointed to by s2 (including the terminating
+N    * null character) to the end of the string pointed to by s1. The initial
+N    * character of s2 overwrites the null character at the end of s1.
+N    * Returns: the value of s1.
+N    */
+Nextern _ARMABI char *strncat(char * __restrict /*s1*/, const char * __restrict /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strncat(char * __restrict  , const char * __restrict  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * appends not more than n characters (a null character and characters that
+N    * follow it are not appended) from the array pointed to by s2 to the end of
+N    * the string pointed to by s1. The initial character of s2 overwrites the
+N    * null character at the end of s1. A terminating null character is always
+N    * appended to the result.
+N    * Returns: the value of s1.
+N    */
+N
+N/*
+N * The sign of a nonzero value returned by the comparison functions is
+N * determined by the sign of the difference between the values of the first
+N * pair of characters (both interpreted as unsigned char) that differ in the
+N * objects being compared.
+N */
+N
+Nextern _ARMABI int memcmp(const void * /*s1*/, const void * /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int memcmp(const void *  , const void *  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares the first n characters of the object pointed to by s1 to the
+N    * first n characters of the object pointed to by s2.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the object pointed to by s1 is greater than, equal to, or
+N    *          less than the object pointed to by s2.
+N    */
+Nextern _ARMABI int strcmp(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int strcmp(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares the string pointed to by s1 to the string pointed to by s2.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the string pointed to by s1 is greater than, equal to, or
+N    *          less than the string pointed to by s2.
+N    */
+Nextern _ARMABI int strncmp(const char * /*s1*/, const char * /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int strncmp(const char *  , const char *  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares not more than n characters (characters that follow a null
+N    * character are not compared) from the array pointed to by s1 to the array
+N    * pointed to by s2.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the string pointed to by s1 is greater than, equal to, or
+N    *          less than the string pointed to by s2.
+N    */
+Nextern _ARMABI int strcasecmp(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int strcasecmp(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares the string pointed to by s1 to the string pointed to by s2,
+N    * case-insensitively as defined by the current locale.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the string pointed to by s1 is greater than, equal to, or
+N    *          less than the string pointed to by s2.
+N    */
+Nextern _ARMABI int strncasecmp(const char * /*s1*/, const char * /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int strncasecmp(const char *  , const char *  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares not more than n characters (characters that follow a null
+N    * character are not compared) from the array pointed to by s1 to the array
+N    * pointed to by s2, case-insensitively as defined by the current locale.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the string pointed to by s1 is greater than, equal to, or
+N    *          less than the string pointed to by s2.
+N    */
+Nextern _ARMABI int strcoll(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int strcoll(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares the string pointed to by s1 to the string pointed to by s2, both
+N    * interpreted as appropriate to the LC_COLLATE category of the current
+N    * locale.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the string pointed to by s1 is greater than, equal to, or
+N    *          less than the string pointed to by s2 when both are interpreted
+N    *          as appropriate to the current locale.
+N    */
+N
+Nextern _ARMABI size_t strxfrm(char * __restrict /*s1*/, const char * __restrict /*s2*/, size_t /*n*/) __attribute__((__nonnull__(2)));
+Xextern __declspec(__nothrow) size_t strxfrm(char * __restrict  , const char * __restrict  , size_t  ) __attribute__((__nonnull__(2)));
+N   /*
+N    * transforms the string pointed to by s2 and places the resulting string
+N    * into the array pointed to by s1. The transformation function is such that
+N    * if the strcmp function is applied to two transformed strings, it returns
+N    * a value greater than, equal to or less than zero, corresponding to the
+N    * result of the strcoll function applied to the same two original strings.
+N    * No more than n characters are placed into the resulting array pointed to
+N    * by s1, including the terminating null character. If n is zero, s1 is
+N    * permitted to be a null pointer. If copying takes place between objects
+N    * that overlap, the behaviour is undefined.
+N    * Returns: The length of the transformed string is returned (not including
+N    *          the terminating null character). If the value returned is n or
+N    *          more, the contents of the array pointed to by s1 are
+N    *          indeterminate.
+N    */
+N
+N
+N#ifdef __cplusplus
+Sextern _ARMABI const void *memchr(const void * /*s*/, int /*c*/, size_t /*n*/) __attribute__((__nonnull__(1)));
+Sextern "C++" void *memchr(void * __s, int __c, size_t __n) __attribute__((__nonnull__(1)));
+Sextern "C++" inline void *memchr(void * __s, int __c, size_t __n)
+S    { return const_cast<void *>(memchr(const_cast<const void *>(__s), __c, __n)); }
+N#else
+Nextern _ARMABI void *memchr(const void * /*s*/, int /*c*/, size_t /*n*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) void *memchr(const void *  , int  , size_t  ) __attribute__((__nonnull__(1)));
+N#endif
+N   /*
+N    * locates the first occurence of c (converted to an unsigned char) in the
+N    * initial n characters (each interpreted as unsigned char) of the object
+N    * pointed to by s.
+N    * Returns: a pointer to the located character, or a null pointer if the
+N    *          character does not occur in the object.
+N    */
+N
+N#ifdef __cplusplus
+Sextern _ARMABI const char *strchr(const char * /*s*/, int /*c*/) __attribute__((__nonnull__(1)));
+Sextern "C++" char *strchr(char * __s, int __c) __attribute__((__nonnull__(1)));
+Sextern "C++" inline char *strchr(char * __s, int __c)
+S    { return const_cast<char *>(strchr(const_cast<const char *>(__s), __c)); }
+N#else
+Nextern _ARMABI char *strchr(const char * /*s*/, int /*c*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) char *strchr(const char *  , int  ) __attribute__((__nonnull__(1)));
+N#endif
+N   /*
+N    * locates the first occurence of c (converted to an char) in the string
+N    * pointed to by s (including the terminating null character).
+N    * Returns: a pointer to the located character, or a null pointer if the
+N    *          character does not occur in the string.
+N    */
+N
+Nextern _ARMABI size_t strcspn(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) size_t strcspn(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * computes the length of the initial segment of the string pointed to by s1
+N    * which consists entirely of characters not from the string pointed to by
+N    * s2. The terminating null character is not considered part of s2.
+N    * Returns: the length of the segment.
+N    */
+N
+N#ifdef __cplusplus
+Sextern _ARMABI const char *strpbrk(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Sextern "C++" char *strpbrk(char * __s1, const char * __s2) __attribute__((__nonnull__(1,2)));
+Sextern "C++" inline char *strpbrk(char * __s1, const char * __s2)
+S    { return const_cast<char *>(strpbrk(const_cast<const char *>(__s1), __s2)); }
+N#else
+Nextern _ARMABI char *strpbrk(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strpbrk(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N#endif
+N   /*
+N    * locates the first occurence in the string pointed to by s1 of any
+N    * character from the string pointed to by s2.
+N    * Returns: returns a pointer to the character, or a null pointer if no
+N    *          character form s2 occurs in s1.
+N    */
+N
+N#ifdef __cplusplus
+Sextern _ARMABI const char *strrchr(const char * /*s*/, int /*c*/) __attribute__((__nonnull__(1)));
+Sextern "C++" char *strrchr(char * __s, int __c) __attribute__((__nonnull__(1)));
+Sextern "C++" inline char *strrchr(char * __s, int __c)
+S    { return const_cast<char *>(strrchr(const_cast<const char *>(__s), __c)); }
+N#else
+Nextern _ARMABI char *strrchr(const char * /*s*/, int /*c*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) char *strrchr(const char *  , int  ) __attribute__((__nonnull__(1)));
+N#endif
+N   /*
+N    * locates the last occurence of c (converted to a char) in the string
+N    * pointed to by s. The terminating null character is considered part of
+N    * the string.
+N    * Returns: returns a pointer to the character, or a null pointer if c does
+N    *          not occur in the string.
+N    */
+N
+Nextern _ARMABI size_t strspn(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) size_t strspn(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * computes the length of the initial segment of the string pointed to by s1
+N    * which consists entirely of characters from the string pointed to by S2
+N    * Returns: the length of the segment.
+N    */
+N
+N#ifdef __cplusplus
+Sextern _ARMABI const char *strstr(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Sextern "C++" char *strstr(char * __s1, const char * __s2) __attribute__((__nonnull__(1,2)));
+Sextern "C++" inline char *strstr(char * __s1, const char * __s2)
+S    { return const_cast<char *>(strstr(const_cast<const char *>(__s1), __s2)); }
+N#else
+Nextern _ARMABI char *strstr(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strstr(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N#endif
+N   /*
+N    * locates the first occurence in the string pointed to by s1 of the
+N    * sequence of characters (excluding the terminating null character) in the
+N    * string pointed to by s2.
+N    * Returns: a pointer to the located string, or a null pointer if the string
+N    *          is not found.
+N    */
+N
+Nextern _ARMABI char *strtok(char * __restrict /*s1*/, const char * __restrict /*s2*/) __attribute__((__nonnull__(2)));
+Xextern __declspec(__nothrow) char *strtok(char * __restrict  , const char * __restrict  ) __attribute__((__nonnull__(2)));
+Nextern _ARMABI char *_strtok_r(char * /*s1*/, const char * /*s2*/, char ** /*ptr*/) __attribute__((__nonnull__(2,3)));
+Xextern __declspec(__nothrow) char *_strtok_r(char *  , const char *  , char **  ) __attribute__((__nonnull__(2,3)));
+N#ifndef __STRICT_ANSI__
+Nextern _ARMABI char *strtok_r(char * /*s1*/, const char * /*s2*/, char ** /*ptr*/) __attribute__((__nonnull__(2,3)));
+Xextern __declspec(__nothrow) char *strtok_r(char *  , const char *  , char **  ) __attribute__((__nonnull__(2,3)));
+N#endif
+N   /*
+N    * A sequence of calls to the strtok function breaks the string pointed to
+N    * by s1 into a sequence of tokens, each of which is delimited by a
+N    * character from the string pointed to by s2. The first call in the
+N    * sequence has s1 as its first argument, and is followed by calls with a
+N    * null pointer as their first argument. The separator string pointed to by
+N    * s2 may be different from call to call.
+N    * The first call in the sequence searches for the first character that is
+N    * not contained in the current separator string s2. If no such character
+N    * is found, then there are no tokens in s1 and the strtok function returns
+N    * a null pointer. If such a character is found, it is the start of the
+N    * first token.
+N    * The strtok function then searches from there for a character that is
+N    * contained in the current separator string. If no such character is found,
+N    * the current token extends to the end of the string pointed to by s1, and
+N    * subsequent searches for a token will fail. If such a character is found,
+N    * it is overwritten by a null character, which terminates the current
+N    * token. The strtok function saves a pointer to the following character,
+N    * from which the next search for a token will start.
+N    * Each subsequent call, with a null pointer as the value for the first
+N    * argument, starts searching from the saved pointer and behaves as
+N    * described above.
+N    * Returns: pointer to the first character of a token, or a null pointer if
+N    *          there is no token.
+N    *
+N    * strtok_r() is a common extension which works exactly like
+N    * strtok(), but instead of storing its state in a hidden
+N    * library variable, requires the user to pass in a pointer to a
+N    * char * variable which will be used instead. Any sequence of
+N    * calls to strtok_r() passing the same char ** pointer should
+N    * behave exactly like the corresponding sequence of calls to
+N    * strtok(). This means that strtok_r() can safely be used in
+N    * multi-threaded programs, and also that you can tokenise two
+N    * strings in parallel.
+N    */
+N
+Nextern _ARMABI void *memset(void * /*s*/, int /*c*/, size_t /*n*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) void *memset(void *  , int  , size_t  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * copies the value of c (converted to an unsigned char) into each of the
+N    * first n charactes of the object pointed to by s.
+N    * Returns: the value of s.
+N    */
+Nextern _ARMABI char *strerror(int /*errnum*/);
+Xextern __declspec(__nothrow) char *strerror(int  );
+N   /*
+N    * maps the error number in errnum to an error message string.
+N    * Returns: a pointer to the string, the contents of which are
+N    *          implementation-defined. The array pointed to shall not be
+N    *          modified by the program, but may be overwritten by a
+N    *          subsequent call to the strerror function.
+N    */
+Nextern _ARMABI size_t strlen(const char * /*s*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) size_t strlen(const char *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * computes the length of the string pointed to by s.
+N    * Returns: the number of characters that precede the terminating null
+N    *          character.
+N    */
+N
+Nextern _ARMABI size_t strlcpy(char * /*dst*/, const char * /*src*/, size_t /*len*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) size_t strlcpy(char *  , const char *  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * copies the string src into the string dst, using no more than
+N    * len bytes of dst. Always null-terminates dst _within the
+N    * length len (i.e. will copy at most len-1 bytes of string plus
+N    * a NUL), unless len is actually zero.
+N    * 
+N    * Return value is the length of the string that _would_ have
+N    * been written, i.e. the length of src. Thus, the operation
+N    * succeeded without truncation if and only if ret < len;
+N    * otherwise, the value in ret tells you how big to make dst if
+N    * you decide to reallocate it. (That value does _not_ include
+N    * the NUL.)
+N    * 
+N    * This is a BSD-derived library extension, which we are
+N    * permitted to declare in a standard header because ISO defines
+N    * function names beginning with 'str' as reserved for future
+N    * expansion of <string.h>.
+N    */
+N
+Nextern _ARMABI size_t strlcat(char * /*dst*/, const char * /*src*/, size_t /*len*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) size_t strlcat(char *  , const char *  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * concatenates the string src to the string dst, using no more
+N    * than len bytes of dst. Always null-terminates dst _within the
+N    * length len (i.e. will copy at most len-1 bytes of string plus
+N    * a NUL), unless len is actually zero.
+N    * 
+N    * Return value is the length of the string that _would_ have
+N    * been written, i.e. the length of src plus the original length
+N    * of dst. Thus, the operation succeeded without truncation if
+N    * and only if ret < len; otherwise, the value in ret tells you
+N    * how big to make dst if you decide to reallocate it. (That
+N    * value does _not_ include the NUL.)
+N    * 
+N    * If no NUL is encountered within the first len bytes of dst,
+N    * then the length of dst is considered to have been equal to
+N    * len for the purposes of the return value (as if there were a
+N    * NUL at dst[len]). Thus, the return value in this case is len
+N    * + strlen(src).
+N    * 
+N    * This is a BSD-derived library extension, which we are
+N    * permitted to declare in a standard header because ISO defines
+N    * function names beginning with 'str' as reserved for future
+N    * expansion of <string.h>.
+N    */
+N
+Nextern _ARMABI void _membitcpybl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpybl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitcpybb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpybb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitcpyhl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpyhl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitcpyhb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpyhb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitcpywl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpywl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitcpywb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpywb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovebl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovebl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovebb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovebb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovehl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovehl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovehb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovehb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovewl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovewl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovewb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovewb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+N    /*
+N     * Copies or moves a piece of memory from one place to another,
+N     * with one-bit granularity. So you can start or finish a copy
+N     * part way through a byte, and you can copy between regions
+N     * with different alignment within a byte.
+N     * 
+N     * All these functions have the same prototype: two void *
+N     * pointers for destination and source, then two integers
+N     * giving the bit offset from those pointers, and finally the
+N     * number of bits to copy.
+N     * 
+N     * Just like memcpy and memmove, the "cpy" functions copy as
+N     * fast as they can in the assumption that the memory regions
+N     * do not overlap, while the "move" functions cope correctly
+N     * with overlap.
+N     *
+N     * Treating memory as a stream of individual bits requires
+N     * defining a convention about what order those bits are
+N     * considered to be arranged in. The above functions support
+N     * multiple conventions:
+N     * 
+N     *  - the "bl" functions consider the unit of memory to be the
+N     *    byte, and consider the bits within each byte to be
+N     *    arranged in little-endian fashion, so that the LSB comes
+N     *    first. (For example, membitcpybl(a,b,0,7,1) would copy
+N     *    the MSB of the byte at b to the LSB of the byte at a.)
+N     * 
+N     *  - the "bb" functions consider the unit of memory to be the
+N     *    byte, and consider the bits within each byte to be
+N     *    arranged in big-endian fashion, so that the MSB comes
+N     *    first.
+N     * 
+N     *  - the "hl" functions consider the unit of memory to be the
+N     *    16-bit halfword, and consider the bits within each word
+N     *    to be arranged in little-endian fashion.
+N     * 
+N     *  - the "hb" functions consider the unit of memory to be the
+N     *    16-bit halfword, and consider the bits within each word
+N     *    to be arranged in big-endian fashion.
+N     * 
+N     *  - the "wl" functions consider the unit of memory to be the
+N     *    32-bit word, and consider the bits within each word to be
+N     *    arranged in little-endian fashion.
+N     * 
+N     *  - the "wb" functions consider the unit of memory to be the
+N     *    32-bit word, and consider the bits within each word to be
+N     *    arranged in big-endian fashion.
+N     */
+N
+N    #ifdef __cplusplus
+S         }  /* extern "C" */
+S      }  /* namespace std */
+N    #endif /* __cplusplus */
+N  #endif /* __STRING_DECLS */
+N
+N  #ifdef __cplusplus
+S    #ifndef __STRING_NO_EXPORTS
+S      using ::std::size_t;
+S      using ::std::memcpy;
+S      using ::std::memmove;
+S      using ::std::strcpy;
+S      using ::std::strncpy;
+S      using ::std::strcat;
+S      using ::std::strncat;
+S      using ::std::memcmp;
+S      using ::std::strcmp;
+S      using ::std::strncmp;
+S      using ::std::strcasecmp;
+S      using ::std::strncasecmp;
+S      using ::std::strcoll;
+S      using ::std::strxfrm;
+S      using ::std::memchr;
+S      using ::std::strchr;
+S      using ::std::strcspn;
+S      using ::std::strpbrk;
+S      using ::std::strrchr;
+S      using ::std::strspn;
+S      using ::std::strstr;
+S      using ::std::strtok;
+S#ifndef __STRICT_ANSI__
+S      using ::std::strtok_r;
+S#endif
+S      using ::std::_strtok_r;
+S      using ::std::memset;
+S      using ::std::strerror;
+S      using ::std::strlen;
+S      using ::std::strlcpy;
+S      using ::std::strlcat;
+S      using ::std::_membitcpybl;
+S      using ::std::_membitcpybb;
+S      using ::std::_membitcpyhl;
+S      using ::std::_membitcpyhb;
+S      using ::std::_membitcpywl;
+S      using ::std::_membitcpywb;
+S      using ::std::_membitmovebl;
+S      using ::std::_membitmovebb;
+S      using ::std::_membitmovehl;
+S      using ::std::_membitmovehb;
+S      using ::std::_membitmovewl;
+S      using ::std::_membitmovewb;
+S    #endif /* __STRING_NO_EXPORTS */
+N  #endif /* __cplusplus */
+N
+N#endif
+N
+N/* end of string.h */
+N
+L 9 "..\..\..\..\scpu\drivers\system\kdp_crc.c" 2
+N#include "kdp_crc.h"
+L 1 "..\..\..\..\scpu\drivers\include\kdp_crc.h" 1
+N/**
+N * @file kdp_crc.h
+N * 
+N * @brief Kneron crc driver header
+N *
+N * Copyright (C) 2018 Kneron, Inc. All rights reserved.
+N *
+N */
+N#ifndef __KDP_CRC16_H__
+N#define __KDP_CRC16_H__
+N
+N#include "types.h"
+L 1 "..\..\..\..\common\include\types.h" 1
+N#ifndef TYPES_H
+N#define TYPES_H
+N
+N#include <stdint.h>
+L 1 "F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h" 1
+N/* Copyright (C) ARM Ltd., 1999,2014 */
+N/* All rights reserved */
+N
+N/*
+N * RCS $Revision$
+N * Checkin $Date$
+N * Revising $Author: agrant $
+N */
+N
+N#ifndef __stdint_h
+N#define __stdint_h
+N#define __ARMCLIB_VERSION 5060037
+N
+N  #ifdef __INT64_TYPE__
+S    /* armclang predefines '__INT64_TYPE__' and '__INT64_C_SUFFIX__' */
+S    #define __INT64 __INT64_TYPE__
+N  #else
+N    /* armcc has builtin '__int64' which can be used in --strict mode */
+N    #define __INT64 __int64
+N    #define __INT64_C_SUFFIX__ ll
+N  #endif
+N  #define __PASTE2(x, y) x ## y
+N  #define __PASTE(x, y) __PASTE2(x, y)
+N  #define __INT64_C(x)  __ESCAPE__(__PASTE(x, __INT64_C_SUFFIX__))
+N  #define __UINT64_C(x)  __ESCAPE__(__PASTE(x ## u, __INT64_C_SUFFIX__))
+N  #if defined(__clang__) || (defined(__ARMCC_VERSION) && !defined(__STRICT_ANSI__))
+X  #if 0L || (1L && !0L)
+N    /* armclang and non-strict armcc allow 'long long' in system headers */
+N    #define __LONGLONG long long
+N  #else
+S    /* strict armcc has '__int64' */
+S    #define __LONGLONG __int64
+N  #endif
+N
+N  #ifndef __STDINT_DECLS
+N  #define __STDINT_DECLS
+N
+N    #undef __CLIBNS
+N
+N    #ifdef __cplusplus
+S      namespace std {
+S          #define __CLIBNS std::
+S          extern "C" {
+N    #else
+N      #define __CLIBNS
+N    #endif  /* __cplusplus */
+N
+N
+N/*
+N * 'signed' is redundant below, except for 'signed char' and if
+N * the typedef is used to declare a bitfield.
+N */
+N
+N    /* 7.18.1.1 */
+N
+N    /* exact-width signed integer types */
+Ntypedef   signed          char int8_t;
+Ntypedef   signed short     int int16_t;
+Ntypedef   signed           int int32_t;
+Ntypedef   signed       __INT64 int64_t;
+Xtypedef   signed       __int64 int64_t;
+N
+N    /* exact-width unsigned integer types */
+Ntypedef unsigned          char uint8_t;
+Ntypedef unsigned short     int uint16_t;
+Ntypedef unsigned           int uint32_t;
+Ntypedef unsigned       __INT64 uint64_t;
+Xtypedef unsigned       __int64 uint64_t;
+N
+N    /* 7.18.1.2 */
+N
+N    /* smallest type of at least n bits */
+N    /* minimum-width signed integer types */
+Ntypedef   signed          char int_least8_t;
+Ntypedef   signed short     int int_least16_t;
+Ntypedef   signed           int int_least32_t;
+Ntypedef   signed       __INT64 int_least64_t;
+Xtypedef   signed       __int64 int_least64_t;
+N
+N    /* minimum-width unsigned integer types */
+Ntypedef unsigned          char uint_least8_t;
+Ntypedef unsigned short     int uint_least16_t;
+Ntypedef unsigned           int uint_least32_t;
+Ntypedef unsigned       __INT64 uint_least64_t;
+Xtypedef unsigned       __int64 uint_least64_t;
+N
+N    /* 7.18.1.3 */
+N
+N    /* fastest minimum-width signed integer types */
+Ntypedef   signed           int int_fast8_t;
+Ntypedef   signed           int int_fast16_t;
+Ntypedef   signed           int int_fast32_t;
+Ntypedef   signed       __INT64 int_fast64_t;
+Xtypedef   signed       __int64 int_fast64_t;
+N
+N    /* fastest minimum-width unsigned integer types */
+Ntypedef unsigned           int uint_fast8_t;
+Ntypedef unsigned           int uint_fast16_t;
+Ntypedef unsigned           int uint_fast32_t;
+Ntypedef unsigned       __INT64 uint_fast64_t;
+Xtypedef unsigned       __int64 uint_fast64_t;
+N
+N    /* 7.18.1.4 integer types capable of holding object pointers */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+Stypedef   signed       __INT64 intptr_t;
+Stypedef unsigned       __INT64 uintptr_t;
+N#else
+Ntypedef   signed           int intptr_t;
+Ntypedef unsigned           int uintptr_t;
+N#endif
+N
+N    /* 7.18.1.5 greatest-width integer types */
+Ntypedef   signed     __LONGLONG intmax_t;
+Xtypedef   signed     long long intmax_t;
+Ntypedef unsigned     __LONGLONG uintmax_t;
+Xtypedef unsigned     long long uintmax_t;
+N
+N
+N#if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS)
+X#if !0L || 0L
+N
+N    /* 7.18.2.1 */
+N
+N    /* minimum values of exact-width signed integer types */
+N#define INT8_MIN                   -128
+N#define INT16_MIN                -32768
+N#define INT32_MIN          (~0x7fffffff)   /* -2147483648 is unsigned */
+N#define INT64_MIN  __INT64_C(~0x7fffffffffffffff) /* -9223372036854775808 is unsigned */
+N
+N    /* maximum values of exact-width signed integer types */
+N#define INT8_MAX                    127
+N#define INT16_MAX                 32767
+N#define INT32_MAX            2147483647
+N#define INT64_MAX  __INT64_C(9223372036854775807)
+N
+N    /* maximum values of exact-width unsigned integer types */
+N#define UINT8_MAX                   255
+N#define UINT16_MAX                65535
+N#define UINT32_MAX           4294967295u
+N#define UINT64_MAX __UINT64_C(18446744073709551615)
+N
+N    /* 7.18.2.2 */
+N
+N    /* minimum values of minimum-width signed integer types */
+N#define INT_LEAST8_MIN                   -128
+N#define INT_LEAST16_MIN                -32768
+N#define INT_LEAST32_MIN          (~0x7fffffff)
+N#define INT_LEAST64_MIN  __INT64_C(~0x7fffffffffffffff)
+N
+N    /* maximum values of minimum-width signed integer types */
+N#define INT_LEAST8_MAX                    127
+N#define INT_LEAST16_MAX                 32767
+N#define INT_LEAST32_MAX            2147483647
+N#define INT_LEAST64_MAX  __INT64_C(9223372036854775807)
+N
+N    /* maximum values of minimum-width unsigned integer types */
+N#define UINT_LEAST8_MAX                   255
+N#define UINT_LEAST16_MAX                65535
+N#define UINT_LEAST32_MAX           4294967295u
+N#define UINT_LEAST64_MAX __UINT64_C(18446744073709551615)
+N
+N    /* 7.18.2.3 */
+N
+N    /* minimum values of fastest minimum-width signed integer types */
+N#define INT_FAST8_MIN           (~0x7fffffff)
+N#define INT_FAST16_MIN          (~0x7fffffff)
+N#define INT_FAST32_MIN          (~0x7fffffff)
+N#define INT_FAST64_MIN  __INT64_C(~0x7fffffffffffffff)
+N
+N    /* maximum values of fastest minimum-width signed integer types */
+N#define INT_FAST8_MAX             2147483647
+N#define INT_FAST16_MAX            2147483647
+N#define INT_FAST32_MAX            2147483647
+N#define INT_FAST64_MAX  __INT64_C(9223372036854775807)
+N
+N    /* maximum values of fastest minimum-width unsigned integer types */
+N#define UINT_FAST8_MAX            4294967295u
+N#define UINT_FAST16_MAX           4294967295u
+N#define UINT_FAST32_MAX           4294967295u
+N#define UINT_FAST64_MAX __UINT64_C(18446744073709551615)
+N
+N    /* 7.18.2.4 */
+N
+N    /* minimum value of pointer-holding signed integer type */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+S#define INTPTR_MIN INT64_MIN
+N#else
+N#define INTPTR_MIN INT32_MIN
+N#endif
+N
+N    /* maximum value of pointer-holding signed integer type */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+S#define INTPTR_MAX INT64_MAX
+N#else
+N#define INTPTR_MAX INT32_MAX
+N#endif
+N
+N    /* maximum value of pointer-holding unsigned integer type */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+S#define UINTPTR_MAX UINT64_MAX
+N#else
+N#define UINTPTR_MAX UINT32_MAX
+N#endif
+N
+N    /* 7.18.2.5 */
+N
+N    /* minimum value of greatest-width signed integer type */
+N#define INTMAX_MIN  __ESCAPE__(~0x7fffffffffffffffll)
+N
+N    /* maximum value of greatest-width signed integer type */
+N#define INTMAX_MAX  __ESCAPE__(9223372036854775807ll)
+N
+N    /* maximum value of greatest-width unsigned integer type */
+N#define UINTMAX_MAX __ESCAPE__(18446744073709551615ull)
+N
+N    /* 7.18.3 */
+N
+N    /* limits of ptrdiff_t */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+S#define PTRDIFF_MIN INT64_MIN
+S#define PTRDIFF_MAX INT64_MAX
+N#else
+N#define PTRDIFF_MIN INT32_MIN
+N#define PTRDIFF_MAX INT32_MAX
+N#endif
+N
+N    /* limits of sig_atomic_t */
+N#define SIG_ATOMIC_MIN (~0x7fffffff)
+N#define SIG_ATOMIC_MAX   2147483647
+N
+N    /* limit of size_t */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+S#define SIZE_MAX UINT64_MAX
+N#else
+N#define SIZE_MAX UINT32_MAX
+N#endif
+N
+N    /* limits of wchar_t */
+N    /* NB we have to undef and redef because they're defined in both
+N     * stdint.h and wchar.h */
+N#undef WCHAR_MIN
+N#undef WCHAR_MAX
+N
+N#if defined(__WCHAR32) || (defined(__ARM_SIZEOF_WCHAR_T) && __ARM_SIZEOF_WCHAR_T == 4)
+X#if 0L || (0L && __ARM_SIZEOF_WCHAR_T == 4)
+S  #define WCHAR_MIN   0
+S  #define WCHAR_MAX   0xffffffffU
+N#else
+N  #define WCHAR_MIN   0
+N  #define WCHAR_MAX   65535
+N#endif
+N
+N    /* limits of wint_t */
+N#define WINT_MIN (~0x7fffffff)
+N#define WINT_MAX 2147483647
+N
+N#endif /* __STDC_LIMIT_MACROS */
+N
+N#if !defined(__cplusplus) || defined(__STDC_CONSTANT_MACROS)
+X#if !0L || 0L
+N
+N    /* 7.18.4.1 macros for minimum-width integer constants */
+N#define INT8_C(x)   (x)
+N#define INT16_C(x)  (x)
+N#define INT32_C(x)  (x)
+N#define INT64_C(x)  __INT64_C(x)
+N
+N#define UINT8_C(x)  (x ## u)
+N#define UINT16_C(x) (x ## u)
+N#define UINT32_C(x) (x ## u)
+N#define UINT64_C(x) __UINT64_C(x)
+N
+N    /* 7.18.4.2 macros for greatest-width integer constants */
+N#define INTMAX_C(x)  __ESCAPE__(x ## ll)
+N#define UINTMAX_C(x) __ESCAPE__(x ## ull)
+N
+N#endif /* __STDC_CONSTANT_MACROS */
+N
+N    #ifdef __cplusplus
+S         }  /* extern "C" */
+S      }  /* namespace std */
+N    #endif /* __cplusplus */
+N  #endif /* __STDINT_DECLS */
+N
+N  #ifdef __cplusplus
+S    #ifndef __STDINT_NO_EXPORTS
+S      using ::std::int8_t;
+S      using ::std::int16_t;
+S      using ::std::int32_t;
+S      using ::std::int64_t;
+S      using ::std::uint8_t;
+S      using ::std::uint16_t;
+S      using ::std::uint32_t;
+S      using ::std::uint64_t;
+S      using ::std::int_least8_t;
+S      using ::std::int_least16_t;
+S      using ::std::int_least32_t;
+S      using ::std::int_least64_t;
+S      using ::std::uint_least8_t;
+S      using ::std::uint_least16_t;
+S      using ::std::uint_least32_t;
+S      using ::std::uint_least64_t;
+S      using ::std::int_fast8_t;
+S      using ::std::int_fast16_t;
+S      using ::std::int_fast32_t;
+S      using ::std::int_fast64_t;
+S      using ::std::uint_fast8_t;
+S      using ::std::uint_fast16_t;
+S      using ::std::uint_fast32_t;
+S      using ::std::uint_fast64_t;
+S      using ::std::intptr_t;
+S      using ::std::uintptr_t;
+S      using ::std::intmax_t;
+S      using ::std::uintmax_t;
+S    #endif
+N  #endif /* __cplusplus */
+N
+N#undef __INT64
+N#undef __LONGLONG
+N
+N#endif /* __stdint_h */
+N
+N/* end of stdint.h */
+L 5 "..\..\..\..\common\include\types.h" 2
+N#include <stdbool.h>
+L 1 "F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h" 1
+N/* stdbool.h: ISO/IEC 9899:1999 (C99), section 7.16 */
+N
+N/* Copyright (C) ARM Ltd., 2002
+N * All rights reserved
+N * RCS $Revision$
+N * Checkin $Date$
+N * Revising $Author: drodgman $
+N */
+N
+N#ifndef __bool_true_false_are_defined
+N#define __bool_true_false_are_defined 1
+N#define __ARMCLIB_VERSION 5060037
+N
+N  #ifndef __cplusplus /* In C++, 'bool', 'true' and 'false' and keywords */
+N    #define bool _Bool
+N    #define true 1
+N    #define false 0
+N  #else
+S    #ifdef __GNUC__
+S      /* GNU C++ supports direct inclusion of stdbool.h to provide C99
+S         compatibility by defining _Bool */
+S      #define _Bool bool
+S    #endif
+N  #endif
+N
+N#endif /* __bool_true_false_are_defined */
+N
+L 6 "..\..\..\..\common\include\types.h" 2
+N
+N//#if TARGET_SCPU
+N#define BS              0x08
+N#define ESC				27
+N
+N#ifndef NULL
+S#define NULL    0
+N#endif
+N
+N#ifndef ENABLE
+N#define ENABLE  1
+N#endif
+N
+N#ifndef DISABLE
+N#define DISABLE 0
+N#endif
+N
+N#ifndef FALSE
+N#define FALSE   0
+N#endif
+N
+N#ifndef TRUE
+N#define TRUE    1
+N#endif
+N#if 0
+Stypedef int bool;
+S#define true 1
+S#define false 0
+N#endif
+N/* type define */
+N	typedef unsigned long long 		UINT64;
+N	typedef long long 				INT64;
+N	typedef	unsigned int			UINT32;
+N	typedef	int						INT32;
+N	typedef	unsigned short			UINT16;
+N	typedef	short					INT16;
+N	typedef unsigned char			UINT8;
+N	typedef char					INT8;
+N	typedef unsigned char			BOOL;
+N
+N	typedef unsigned char           u8_t;
+N	typedef unsigned short          u16_t;
+N	typedef unsigned long           u32_t;
+N	typedef unsigned long long		u64_t;
+N
+N	typedef unsigned char 			uchar;
+N
+N    typedef char                    s8;
+N	typedef short                   s16;
+N    typedef int                     s32;
+N    typedef long long               s64;
+N
+N    typedef unsigned char           u8;
+N	typedef unsigned short          u16;
+N    typedef unsigned int            u32;
+N    typedef unsigned long long      u64;
+N
+N#ifndef _SIZE_T
+N#define _SIZE_T
+Ntypedef unsigned int size_t;
+N#endif
+N
+N#ifndef _SSIZE_T
+N#define _SSIZE_T
+Ntypedef long ssize_t;
+N#endif
+N
+Ntypedef INT8          INT8S;
+Ntypedef UINT8         INT8U;
+Ntypedef INT16         INT16S;
+Ntypedef UINT16        INT16U;
+Ntypedef INT32         INT32S;
+Ntypedef UINT32        INT32U;
+N
+N
+Ntypedef unsigned char                   byte;
+Ntypedef unsigned short                  word;
+Ntypedef unsigned long int               dword;
+N
+N//#endif
+N
+N#endif //TYPES_H
+L 13 "..\..\..\..\scpu\drivers\include\kdp_crc.h" 2
+N
+N#define CRC16_CONSTANT 0x8005
+N
+N/**
+N * @brief generate crc16 code
+N * @parem [in] data
+N * @parem [in] size : data size
+N */
+Nu16 kdp_gen_crc16(u8 *data, u32 size);
+Nu32 kdp_gen_sha32(u8 *data, u32 size);
+Nu32 kdp_gen_sum32(u8 *data, u32 size);
+N
+N#endif
+L 10 "..\..\..\..\scpu\drivers\system\kdp_crc.c" 2
+N#include "kdp_sha1.h"
+L 1 "..\..\..\..\scpu\drivers\include\kdp_sha1.h" 1
+N/*
+N *  sha1.h
+N *
+N *  Description:
+N *      This is the header file for code which implements the Secure
+N *      Hashing Algorithm 1 as defined in FIPS PUB 180-1 published
+N *      April 17, 1995.
+N *
+N *      Many of the variable names in this code, especially the
+N *      single character names, were used because those were the names
+N *      used in the publication.
+N *
+N *      Please read the file sha1.c for more information.
+N *
+N */
+N
+N#ifndef _SHA1_H_
+N#define _SHA1_H_
+N
+N#include <stdint.h>
+N/*
+N * If you do not have the ISO standard stdint.h header file, then you
+N * must typdef the following:
+N *    name              meaning
+N *  uint32_t         unsigned 32 bit integer
+N *  uint8_t          unsigned 8 bit integer (i.e., unsigned char)
+N *  int_least16_t    integer of >= 16 bits
+N *
+N */
+N
+N#ifndef _SHA_enum_
+N#define _SHA_enum_
+Nenum
+N{
+N    shaSuccess = 0,
+N    shaNull,            /* Null pointer parameter */
+N    shaInputTooLong,    /* input data too long */
+N    shaStateError       /* called Input after Result */
+N};
+N#endif
+N#define SHA1HashSize 20
+N
+N/*
+N *  This structure will hold context information for the SHA-1
+N *  hashing operation
+N */
+Ntypedef struct SHA1Context
+N{
+N    uint32_t Intermediate_Hash[SHA1HashSize/4]; /* Message Digest  */
+X    uint32_t Intermediate_Hash[20/4];  
+N
+N    uint32_t Length_Low;            /* Message length in bits      */
+N    uint32_t Length_High;           /* Message length in bits      */
+N
+N                               /* Index into message block array   */
+N    int_least16_t Message_Block_Index;
+N    uint8_t Message_Block[64];      /* 512-bit message blocks      */
+N
+N    int Computed;               /* Is the digest computed?         */
+N    int Corrupted;             /* Is the message digest corrupted? */
+N} SHA1Context;
+N
+N/*
+N *  Function Prototypes
+N */
+N
+Nint SHA1Reset(  SHA1Context *);
+Nint SHA1Input(  SHA1Context *,
+N                const uint8_t *,
+N                unsigned int);
+Nint SHA1Result( SHA1Context *,
+N                uint8_t Message_Digest[SHA1HashSize]);
+X                uint8_t Message_Digest[20]);
+N
+N#endif
+L 11 "..\..\..\..\scpu\drivers\system\kdp_crc.c" 2
+N#include "dbg.h"
+L 1 "..\..\..\..\common\include\dbg.h" 1
+N/**
+N * @file      dbg.h
+N * @brief     debug macro 
+N * @copyright (c) 2018 Kneron Inc. All right reserved.
+N */
+N
+N#ifndef __DBG_H__
+N#define __DBG_H__
+N
+N#include <stdio.h>
+L 1 "F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h" 1
+N/* stdio.h: ANSI 'C' (X3J11 Oct 88) library header, section 4.9 */
+N/* Copyright (C) Codemist Ltd., 1988-1993                       */
+N/* Copyright 1991-1998 ARM Limited. All rights reserved.        */
+N
+N/*
+N * RCS $Revision$
+N * Checkin $Date$
+N * Revising $Author: sdouglas $
+N */
+N
+N/*
+N * stdio.h declares two types, several macros, and many functions for
+N * performing input and output. For a discussion on Streams and Files
+N * refer to sections 4.9.2 and 4.9.3 in the above ANSI draft, or to a
+N * modern textbook on C.
+N */
+N
+N#ifndef __stdio_h
+N#define __stdio_h
+N#define __ARMCLIB_VERSION 5060037
+N
+N/*
+N * Depending on compiler version __int64 or __INT64_TYPE__ should be defined.
+N */
+N#ifndef __int64
+N  #ifdef __INT64_TYPE__
+S    #define __int64 __INT64_TYPE__
+N  #endif
+N  /* On some architectures neither of these may be defined - if so, fall
+N     through and error out if used. */
+N#endif
+N
+N
+N#define _ARMABI __declspec(__nothrow)
+N
+N  #ifndef __STDIO_DECLS
+N  #define __STDIO_DECLS
+N
+N    #undef __CLIBNS
+N    #ifdef __cplusplus
+S      namespace std {
+S      #define __CLIBNS ::std::
+S        extern "C" {
+N    #else /* ndef __cplusplus */
+N      #define __CLIBNS
+N    #endif /* ndef __cplusplus */
+N
+N#if defined(__cplusplus) || !defined(__STRICT_ANSI__) || !defined(__size_t)
+X#if 0L || !0L || !0L
+N /* always defined in C++ and non-strict C for consistency of debug info */
+N  #if __sizeof_ptr == 8
+X  #if 4 == 8
+S    typedef unsigned long size_t;   /* see <stddef.h> */
+N  #else
+N    typedef unsigned int size_t;   /* see <stddef.h> */
+N  #endif
+N  #if !defined(__cplusplus) && defined(__STRICT_ANSI__)
+X  #if !0L && 0L
+S    #define __size_t 1
+N  #endif
+N#endif
+N
+N#undef NULL
+N#define NULL 0                   /* see <stddef.h> */
+N
+N/* ANSI forbids va_list to be defined here */
+N/* keep in step with <stdarg.h> and <wchar.h> */
+N#if !defined(__va_list) && (defined(__cplusplus) || !defined(__STRICT_ANSI__) || !defined(__va_list_defined))
+X#if !0L && (0L || !0L || !0L)
+N/* always defined in C++ and non-strict C for consistency of debug info */
+N  #ifdef __clang__
+S    typedef __builtin_va_list __va_list;
+N  #else
+N    typedef struct __va_list __va_list;
+N  #endif
+N  #if !defined(__cplusplus) && defined(__STRICT_ANSI__)
+X  #if !0L && 0L
+S    #define __va_list_defined 1
+N  #endif
+N#endif
+N
+N   /*
+N    * If the compiler supports signalling nans as per N965 then it
+N    * will define __SUPPORT_SNAN__, in which case a user may define
+N    * _WANT_SNAN in order to obtain compliant versions of the printf
+N    * and scanf families of functions
+N    */
+N#if defined(__SUPPORT_SNAN__) && defined(_WANT_SNAN)
+X#if 0L && 0L
+S#pragma import(__use_snan)
+N#endif
+N
+Ntypedef struct __fpos_t_struct {
+N    unsigned __int64 __pos;
+N    /*
+N     * this structure is equivalent to an mbstate_t, but we're not
+N     * allowed to actually define the type name `mbstate_t' within
+N     * stdio.h
+N     */
+N    struct {
+N        unsigned int __state1, __state2;
+N    } __mbstate;
+N} fpos_t;
+N   /*
+N    * fpos_t is an object capable of recording all information needed to
+N    * specify uniquely every position within a file.
+N    */
+N
+N#define _SYS_OPEN 16
+N   /* _SYS_OPEN defines a limit on the number of open files that is imposed
+N    * by this C library
+N    */
+N
+Ntypedef struct __FILE FILE;
+N   /*
+N    * FILE is an object capable of recording all information needed to control
+N    * a stream, such as its file position indicator, a pointer to its
+N    * associated buffer, an error indicator that records whether a read/write
+N    * error has occurred and an end-of-file indicator that records whether the
+N    * end-of-file has been reached.
+N    * Its structure is not made known to library clients.
+N    */
+N
+N#if defined(__STRICT_ANSI__) && !__FILE_INCOMPLETE
+X#if 0L && !__FILE_INCOMPLETE
+Sstruct __FILE {
+S    union {
+S        long __FILE_alignment;
+S#ifdef __TARGET_ARCH_AARCH64
+S        char __FILE_size[136];
+S#else /* __TARGET_ARCH_AARCH64 */
+S        char __FILE_size[84];
+S#endif /* __TARGET_ARCH_AARCH64 */
+S    } __FILE_opaque;
+S};
+S    /*
+S     * FILE must be an object type (C99 - 7.19.1) and an object type fully
+S     * describes an object [including its static size] (C99 - 6.2.5).
+S     * This definition is a placeholder which matches the struct __FILE in
+S     * size and alignment as used internally by libc.
+S     */
+N#endif
+N
+N
+Nextern FILE __stdin, __stdout, __stderr;
+Nextern FILE *__aeabi_stdin, *__aeabi_stdout, *__aeabi_stderr;
+N
+N#if _AEABI_PORTABILITY_LEVEL != 0 || (!defined _AEABI_PORTABILITY_LEVEL && __DEFAULT_AEABI_PORTABILITY_LEVEL != 0)
+X#if _AEABI_PORTABILITY_LEVEL != 0 || (!0L && __DEFAULT_AEABI_PORTABILITY_LEVEL != 0)
+S#define stdin  (__CLIBNS __aeabi_stdin)
+S   /* pointer to a FILE object associated with standard input stream */
+S#define stdout (__CLIBNS __aeabi_stdout)
+S   /* pointer to a FILE object associated with standard output stream */
+S#define stderr (__CLIBNS __aeabi_stderr)
+S   /* pointer to a FILE object associated with standard error stream */
+Sextern const int __aeabi_IOFBF;
+S#define _IOFBF (__CLIBNS __aeabi_IOFBF)
+Sextern const int __aeabi_IONBF;
+S#define _IONBF (__CLIBNS __aeabi_IONBF)
+Sextern const int __aeabi_IOLBF;
+S#define _IOLBF (__CLIBNS __aeabi_IOLBF)
+Sextern const int __aeabi_BUFSIZ;
+S#define BUFSIZ (__CLIBNS __aeabi_BUFSIZ)
+Sextern const int __aeabi_FOPEN_MAX;
+S#define FOPEN_MAX (__CLIBNS __aeabi_FOPEN_MAX)
+Sextern const int __aeabi_TMP_MAX;
+S#define TMP_MAX (__CLIBNS __aeabi_TMP_MAX)
+Sextern const int __aeabi_FILENAME_MAX;
+S#define FILENAME_MAX (__CLIBNS __aeabi_FILENAME_MAX)
+Sextern const int __aeabi_L_tmpnam;
+S#define L_tmpnam (__CLIBNS __aeabi_L_tmpnam)
+N#else
+N#define stdin  (&__CLIBNS __stdin)
+N   /* pointer to a FILE object associated with standard input stream */
+N#define stdout (&__CLIBNS __stdout)
+N   /* pointer to a FILE object associated with standard output stream */
+N#define stderr (&__CLIBNS __stderr)
+N   /* pointer to a FILE object associated with standard error stream */
+N
+N#define _IOFBF           0x100 /* fully buffered IO */
+N#define _IOLBF           0x200 /* line buffered IO */
+N#define _IONBF           0x400 /* unbuffered IO */
+N
+N    /* Various default file IO buffer sizes */
+N#define BUFSIZ       (512)  /* system buffer size (as used by setbuf) */
+N
+N#define FOPEN_MAX _SYS_OPEN
+N   /*
+N    * an integral constant expression that is the minimum number of files that
+N    * this implementation guarantees can be open simultaneously.
+N    */
+N
+N#define FILENAME_MAX 256
+N   /*
+N    * an integral constant expression that is the size of an array of char
+N    * large enough to hold the longest filename string
+N    */
+N#define L_tmpnam FILENAME_MAX
+N   /*
+N    * an integral constant expression that is the size of an array of char
+N    * large enough to hold a temporary file name string generated by the
+N    * tmpnam function.
+N    */
+N#define TMP_MAX 256
+N   /*
+N    * an integral constant expression that is the minimum number of unique
+N    * file names that shall be generated by the tmpnam function.
+N    */
+N
+N#endif
+N
+N#define EOF      (-1)
+N   /*
+N    * negative integral constant, indicates end-of-file, that is, no more input
+N    * from a stream.
+N    */
+N
+N#define SEEK_SET 0 /* start of stream (see fseek) */
+N#define SEEK_CUR 1 /* current position in stream (see fseek) */
+N#define SEEK_END 2 /* end of stream (see fseek) */
+N
+N    /*
+N     * _IOBIN is the flag passed to _sys_write to denote a binary
+N     * file.
+N     */
+N#define _IOBIN            0x04     /* binary stream */
+N
+N#define __STDIN_BUFSIZ  (64)  /* default stdin buffer size */
+N#define __STDOUT_BUFSIZ (64)  /* default stdout buffer size */
+N#define __STDERR_BUFSIZ (16)  /* default stderr buffer size */
+N
+Nextern _ARMABI int remove(const char * /*filename*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int remove(const char *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * causes the file whose name is the string pointed to by filename to be
+N    * removed. Subsequent attempts to open the file will fail, unless it is
+N    * created anew. If the file is open, the behaviour of the remove function
+N    * is implementation-defined.
+N    * Returns: zero if the operation succeeds, nonzero if it fails.
+N    */
+Nextern _ARMABI int rename(const char * /*old*/, const char * /*new*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int rename(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * causes the file whose name is the string pointed to by old to be
+N    * henceforth known by the name given by the string pointed to by new. The
+N    * file named old is effectively removed. If a file named by the string
+N    * pointed to by new exists prior to the call of the rename function, the
+N    * behaviour is implementation-defined.
+N    * Returns: zero if the operation succeeds, nonzero if it fails, in which
+N    *          case if the file existed previously it is still known by its
+N    *          original name.
+N    */
+Nextern _ARMABI FILE *tmpfile(void);
+Xextern __declspec(__nothrow) FILE *tmpfile(void);
+N   /*
+N    * creates a temporary binary file that will be automatically removed when
+N    * it is closed or at program termination. The file is opened for update.
+N    * Returns: a pointer to the stream of the file that it created. If the file
+N    *          cannot be created, a null pointer is returned.
+N    */
+Nextern _ARMABI char *tmpnam(char * /*s*/);
+Xextern __declspec(__nothrow) char *tmpnam(char *  );
+N   /*
+N    * generates a string that is not the same as the name of an existing file.
+N    * The tmpnam function generates a different string each time it is called,
+N    * up to TMP_MAX times. If it is called more than TMP_MAX times, the
+N    * behaviour is implementation-defined.
+N    * Returns: If the argument is a null pointer, the tmpnam function leaves
+N    *          its result in an internal static object and returns a pointer to
+N    *          that object. Subsequent calls to the tmpnam function may modify
+N    *          the same object. if the argument is not a null pointer, it is
+N    *          assumed to point to an array of at least L_tmpnam characters;
+N    *          the tmpnam function writes its result in that array and returns
+N    *          the argument as its value.
+N    */
+N
+Nextern _ARMABI int fclose(FILE * /*stream*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int fclose(FILE *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * causes the stream pointed to by stream to be flushed and the associated
+N    * file to be closed. Any unwritten buffered data for the stream are
+N    * delivered to the host environment to be written to the file; any unread
+N    * buffered data are discarded. The stream is disassociated from the file.
+N    * If the associated buffer was automatically allocated, it is deallocated.
+N    * Returns: zero if the stream was succesfully closed, or nonzero if any
+N    *          errors were detected or if the stream was already closed.
+N    */
+Nextern _ARMABI int fflush(FILE * /*stream*/);
+Xextern __declspec(__nothrow) int fflush(FILE *  );
+N   /*
+N    * If the stream points to an output or update stream in which the most
+N    * recent operation was output, the fflush function causes any unwritten
+N    * data for that stream to be delivered to the host environment to be
+N    * written to the file. If the stream points to an input or update stream,
+N    * the fflush function undoes the effect of any preceding ungetc operation
+N    * on the stream.
+N    * Returns: nonzero if a write error occurs.
+N    */
+Nextern _ARMABI FILE *fopen(const char * __restrict /*filename*/,
+Xextern __declspec(__nothrow) FILE *fopen(const char * __restrict  ,
+N                           const char * __restrict /*mode*/) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * opens the file whose name is the string pointed to by filename, and
+N    * associates a stream with it.
+N    * The argument mode points to a string beginning with one of the following
+N    * sequences:
+N    * "r"         open text file for reading
+N    * "w"         create text file for writing, or truncate to zero length
+N    * "a"         append; open text file or create for writing at eof
+N    * "rb"        open binary file for reading
+N    * "wb"        create binary file for writing, or truncate to zero length
+N    * "ab"        append; open binary file or create for writing at eof
+N    * "r+"        open text file for update (reading and writing)
+N    * "w+"        create text file for update, or truncate to zero length
+N    * "a+"        append; open text file or create for update, writing at eof
+N    * "r+b"/"rb+" open binary file for update (reading and writing)
+N    * "w+b"/"wb+" create binary file for update, or truncate to zero length
+N    * "a+b"/"ab+" append; open binary file or create for update, writing at eof
+N    *
+N    * Opening a file with read mode ('r' as the first character in the mode
+N    * argument) fails if the file does not exist or cannot be read.
+N    * Opening a file with append mode ('a' as the first character in the mode
+N    * argument) causes all subsequent writes to be forced to the current end of
+N    * file, regardless of intervening calls to the fseek function. In some
+N    * implementations, opening a binary file with append mode ('b' as the
+N    * second or third character in the mode argument) may initially position
+N    * the file position indicator beyond the last data written, because of the
+N    * NUL padding.
+N    * When a file is opened with update mode ('+' as the second or third
+N    * character in the mode argument), both input and output may be performed
+N    * on the associated stream. However, output may not be directly followed
+N    * by input without an intervening call to the fflush fuction or to a file
+N    * positioning function (fseek, fsetpos, or rewind), and input be not be
+N    * directly followed by output without an intervening call to the fflush
+N    * fuction or to a file positioning function, unless the input operation
+N    * encounters end-of-file. Opening a file with update mode may open or
+N    * create a binary stream in some implementations. When opened, a stream
+N    * is fully buffered if and only if it does not refer to an interactive
+N    * device. The error and end-of-file indicators for the stream are
+N    * cleared.
+N    * Returns: a pointer to the object controlling the stream. If the open
+N    *          operation fails, fopen returns a null pointer.
+N    */
+Nextern _ARMABI FILE *freopen(const char * __restrict /*filename*/,
+Xextern __declspec(__nothrow) FILE *freopen(const char * __restrict  ,
+N                    const char * __restrict /*mode*/,
+N                    FILE * __restrict /*stream*/) __attribute__((__nonnull__(2,3)));
+N   /*
+N    * opens the file whose name is the string pointed to by filename and
+N    * associates the stream pointed to by stream with it. The mode argument is
+N    * used just as in the fopen function.
+N    * The freopen function first attempts to close any file that is associated
+N    * with the specified stream. Failure to close the file successfully is
+N    * ignored. The error and end-of-file indicators for the stream are cleared.
+N    * Returns: a null pointer if the operation fails. Otherwise, freopen
+N    *          returns the value of the stream.
+N    */
+Nextern _ARMABI void setbuf(FILE * __restrict /*stream*/,
+Xextern __declspec(__nothrow) void setbuf(FILE * __restrict  ,
+N                    char * __restrict /*buf*/) __attribute__((__nonnull__(1)));
+N   /*
+N    * Except that it returns no value, the setbuf function is equivalent to the
+N    * setvbuf function invoked with the values _IOFBF for mode and BUFSIZ for
+N    * size, or (if buf is a null pointer), with the value _IONBF for mode.
+N    * Returns: no value.
+N    */
+Nextern _ARMABI int setvbuf(FILE * __restrict /*stream*/,
+Xextern __declspec(__nothrow) int setvbuf(FILE * __restrict  ,
+N                   char * __restrict /*buf*/,
+N                   int /*mode*/, size_t /*size*/) __attribute__((__nonnull__(1)));
+N   /*
+N    * may be used after the stream pointed to by stream has been associated
+N    * with an open file but before it is read or written. The argument mode
+N    * determines how stream will be buffered, as follows: _IOFBF causes
+N    * input/output to be fully buffered; _IOLBF causes output to be line
+N    * buffered (the buffer will be flushed when a new-line character is
+N    * written, when the buffer is full, or when input is requested); _IONBF
+N    * causes input/output to be completely unbuffered. If buf is not the null
+N    * pointer, the array it points to may be used instead of an automatically
+N    * allocated buffer (the buffer must have a lifetime at least as great as
+N    * the open stream, so the stream should be closed before a buffer that has
+N    * automatic storage duration is deallocated upon block exit). The argument
+N    * size specifies the size of the array. The contents of the array at any
+N    * time are indeterminate.
+N    * Returns: zero on success, or nonzero if an invalid value is given for
+N    *          mode or size, or if the request cannot be honoured.
+N    */
+N#pragma __printf_args
+Nextern _ARMABI int fprintf(FILE * __restrict /*stream*/,
+Xextern __declspec(__nothrow) int fprintf(FILE * __restrict  ,
+N                    const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * writes output to the stream pointed to by stream, under control of the
+N    * string pointed to by format that specifies how subsequent arguments are
+N    * converted for output. If there are insufficient arguments for the format,
+N    * the behaviour is undefined. If the format is exhausted while arguments
+N    * remain, the excess arguments are evaluated but otherwise ignored. The
+N    * fprintf function returns when the end of the format string is reached.
+N    * The format shall be a multibyte character sequence, beginning and ending
+N    * in its initial shift state. The format is composed of zero or more
+N    * directives: ordinary multibyte characters (not %), which are copied
+N    * unchanged to the output stream; and conversion specifiers, each of which
+N    * results in fetching zero or more subsequent arguments. Each conversion
+N    * specification is introduced by the character %. For a description of the
+N    * available conversion specifiers refer to section 4.9.6.1 in the ANSI
+N    * draft mentioned at the start of this file or to any modern textbook on C.
+N    * The minimum value for the maximum number of characters producable by any
+N    * single conversion is at least 509.
+N    * Returns: the number of characters transmitted, or a negative value if an
+N    *          output error occurred.
+N    */
+N#pragma __printf_args
+Nextern _ARMABI int _fprintf(FILE * __restrict /*stream*/,
+Xextern __declspec(__nothrow) int _fprintf(FILE * __restrict  ,
+N                     const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * is equivalent to fprintf, but does not support floating-point formats.
+N    * You can use instead of fprintf to improve code size.
+N    * Returns: as fprintf.
+N    */
+N#pragma __printf_args
+Nextern _ARMABI int printf(const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int printf(const char * __restrict  , ...) __attribute__((__nonnull__(1)));
+N   /*
+N    * is equivalent to fprintf with the argument stdout interposed before the
+N    * arguments to printf.
+N    * Returns: the number of characters transmitted, or a negative value if an
+N    *          output error occurred.
+N    */
+N#pragma __printf_args
+Nextern _ARMABI int _printf(const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int _printf(const char * __restrict  , ...) __attribute__((__nonnull__(1)));
+N   /*
+N    * is equivalent to printf, but does not support floating-point formats.
+N    * You can use instead of printf to improve code size.
+N    * Returns: as printf.
+N    */
+N#pragma __printf_args
+Nextern _ARMABI int sprintf(char * __restrict /*s*/, const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int sprintf(char * __restrict  , const char * __restrict  , ...) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * is equivalent to fprintf, except that the argument s specifies an array
+N    * into which the generated output is to be written, rather than to a
+N    * stream. A null character is written at the end of the characters written;
+N    * it is not counted as part of the returned sum.
+N    * Returns: the number of characters written to the array, not counting the
+N    *          terminating null character.
+N    */
+N#pragma __printf_args
+Nextern _ARMABI int _sprintf(char * __restrict /*s*/, const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int _sprintf(char * __restrict  , const char * __restrict  , ...) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * is equivalent to sprintf, but does not support floating-point formats.
+N    * You can use instead of sprintf to improve code size.
+N    * Returns: as sprintf.
+N    */
+N
+N#pragma __printf_args
+Nextern _ARMABI int __ARM_snprintf(char * __restrict /*s*/, size_t /*n*/,
+Xextern __declspec(__nothrow) int __ARM_snprintf(char * __restrict  , size_t  ,
+N                     const char * __restrict /*format*/, ...) __attribute__((__nonnull__(3)));
+N
+N#if !defined(__STRICT_ANSI__) || (defined(__STDC_VERSION__) && 199901L <= __STDC_VERSION__) || (defined(__cplusplus) && 201103L <= __cplusplus)
+X#if !0L || (1L && 199901L <= 199901L) || (0L && 201103L <= __cplusplus)
+N#pragma __printf_args
+Nextern _ARMABI int snprintf(char * __restrict /*s*/, size_t /*n*/,
+Xextern __declspec(__nothrow) int snprintf(char * __restrict  , size_t  ,
+N                     const char * __restrict /*format*/, ...) __attribute__((__nonnull__(3)));
+N   /*
+N    * is equivalent to fprintf, except that the argument s specifies an array
+N    * into which the generated output is to be written, rather than to a
+N    * stream. The argument n specifies the size of the output array, so as to
+N    * avoid overflowing the buffer.
+N    * A null character is written at the end of the characters written, even
+N    * if the formatting was not completed; it is not counted as part of the
+N    * returned sum. At most n characters of the output buffer are used,
+N    * _including_ the null character.
+N    * Returns: the number of characters that would have been written to the
+N    *          array, not counting the terminating null character, if the
+N    *          array had been big enough. So if the return is >=0 and <n, then
+N    *          the entire string was successfully formatted; if the return is
+N    *          >=n, the string was truncated (but there is still a null char
+N    *          at the end of what was written); if the return is <0, there was
+N    *          an error.
+N    */
+N#endif
+N#pragma __printf_args
+Nextern _ARMABI int _snprintf(char * __restrict /*s*/, size_t /*n*/,
+Xextern __declspec(__nothrow) int _snprintf(char * __restrict  , size_t  ,
+N                      const char * __restrict /*format*/, ...) __attribute__((__nonnull__(3)));
+N   /*
+N    * is equivalent to snprintf, but does not support floating-point formats.
+N    * You can use instead of snprintf to improve code size.
+N    * Returns: as snprintf.
+N    */
+N#pragma __scanf_args
+Nextern _ARMABI int fscanf(FILE * __restrict /*stream*/,
+Xextern __declspec(__nothrow) int fscanf(FILE * __restrict  ,
+N                    const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * reads input from the stream pointed to by stream, under control of the
+N    * string pointed to by format that specifies the admissible input sequences
+N    * and how thay are to be converted for assignment, using subsequent
+N    * arguments as pointers to the objects to receive the converted input. If
+N    * there are insufficient arguments for the format, the behaviour is
+N    * undefined. If the format is exhausted while arguments remain, the excess
+N    * arguments are evaluated but otherwise ignored.
+N    * The format is composed of zero or more directives: one or more
+N    * white-space characters; an ordinary character (not %); or a conversion
+N    * specification. Each conversion specification is introduced by the
+N    * character %. For a description of the available conversion specifiers
+N    * refer to section 4.9.6.2 in the ANSI draft mentioned at the start of this
+N    * file, or to any modern textbook on C.
+N    * If end-of-file is encountered during input, conversion is terminated. If
+N    * end-of-file occurs before any characters matching the current directive
+N    * have been read (other than leading white space, where permitted),
+N    * execution of the current directive terminates with an input failure;
+N    * otherwise, unless execution of the current directive is terminated with a
+N    * matching failure, execution of the following directive (if any) is
+N    * terminated with an input failure.
+N    * If conversions terminates on a conflicting input character, the offending
+N    * input character is left unread in the input strem. Trailing white space
+N    * (including new-line characters) is left unread unless matched by a
+N    * directive. The success of literal matches and suppressed asignments is
+N    * not directly determinable other than via the %n directive.
+N    * Returns: the value of the macro EOF if an input failure occurs before any
+N    *          conversion. Otherwise, the fscanf function returns the number of
+N    *          input items assigned, which can be fewer than provided for, or
+N    *          even zero, in the event of an early conflict between an input
+N    *          character and the format.
+N    */
+N#pragma __scanf_args
+Nextern _ARMABI int _fscanf(FILE * __restrict /*stream*/,
+Xextern __declspec(__nothrow) int _fscanf(FILE * __restrict  ,
+N                     const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * is equivalent to fscanf, but does not support floating-point formats.
+N    * You can use instead of fscanf to improve code size.
+N    * Returns: as fscanf.
+N    */
+N#pragma __scanf_args
+Nextern _ARMABI int scanf(const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int scanf(const char * __restrict  , ...) __attribute__((__nonnull__(1)));
+N   /*
+N    * is equivalent to fscanf with the argument stdin interposed before the
+N    * arguments to scanf.
+N    * Returns: the value of the macro EOF if an input failure occurs before any
+N    *          conversion. Otherwise, the scanf function returns the number of
+N    *          input items assigned, which can be fewer than provided for, or
+N    *          even zero, in the event of an early matching failure.
+N    */
+N#pragma __scanf_args
+Nextern _ARMABI int _scanf(const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int _scanf(const char * __restrict  , ...) __attribute__((__nonnull__(1)));
+N   /*
+N    * is equivalent to scanf, but does not support floating-point formats.
+N    * You can use instead of scanf to improve code size.
+N    * Returns: as scanf.
+N    */
+N#pragma __scanf_args
+Nextern _ARMABI int sscanf(const char * __restrict /*s*/,
+Xextern __declspec(__nothrow) int sscanf(const char * __restrict  ,
+N                    const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * is equivalent to fscanf except that the argument s specifies a string
+N    * from which the input is to be obtained, rather than from a stream.
+N    * Reaching the end of the string is equivalent to encountering end-of-file
+N    * for the fscanf function.
+N    * Returns: the value of the macro EOF if an input failure occurs before any
+N    *          conversion. Otherwise, the scanf function returns the number of
+N    *          input items assigned, which can be fewer than provided for, or
+N    *          even zero, in the event of an early matching failure.
+N    */
+N#pragma __scanf_args
+Nextern _ARMABI int _sscanf(const char * __restrict /*s*/,
+Xextern __declspec(__nothrow) int _sscanf(const char * __restrict  ,
+N                     const char * __restrict /*format*/, ...) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * is equivalent to sscanf, but does not support floating-point formats.
+N    * You can use instead of sscanf to improve code size.
+N    * Returns: as sscanf.
+N    */
+N#if !defined(__STRICT_ANSI__) || (defined(__STDC_VERSION__) && 199901L <= __STDC_VERSION__) || (defined(__cplusplus) && 201103L <= __cplusplus)
+X#if !0L || (1L && 199901L <= 199901L) || (0L && 201103L <= __cplusplus)
+N/* C99 additions */
+Nextern _ARMABI int vfscanf(FILE * __restrict /*stream*/, const char * __restrict /*format*/, __va_list) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int vfscanf(FILE * __restrict  , const char * __restrict  , __va_list) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI int vscanf(const char * __restrict /*format*/, __va_list) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int vscanf(const char * __restrict  , __va_list) __attribute__((__nonnull__(1)));
+Nextern _ARMABI int vsscanf(const char * __restrict /*s*/, const char * __restrict /*format*/, __va_list) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int vsscanf(const char * __restrict  , const char * __restrict  , __va_list) __attribute__((__nonnull__(1,2)));
+N#endif
+Nextern _ARMABI int _vfscanf(FILE * __restrict /*stream*/, const char * __restrict /*format*/, __va_list) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int _vfscanf(FILE * __restrict  , const char * __restrict  , __va_list) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI int _vscanf(const char * __restrict /*format*/, __va_list) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int _vscanf(const char * __restrict  , __va_list) __attribute__((__nonnull__(1)));
+Nextern _ARMABI int _vsscanf(const char * __restrict /*s*/, const char * __restrict /*format*/, __va_list) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int _vsscanf(const char * __restrict  , const char * __restrict  , __va_list) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI int __ARM_vsscanf(const char * __restrict /*s*/, const char * __restrict /*format*/, __va_list) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int __ARM_vsscanf(const char * __restrict  , const char * __restrict  , __va_list) __attribute__((__nonnull__(1,2)));
+N
+Nextern _ARMABI int vprintf(const char * __restrict /*format*/, __va_list /*arg*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int vprintf(const char * __restrict  , __va_list  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * is equivalent to printf, with the variable argument list replaced by arg,
+N    * which has been initialised by the va_start macro (and possibly subsequent
+N    * va_arg calls). The vprintf function does not invoke the va_end function.
+N    * Returns: the number of characters transmitted, or a negative value if an
+N    *          output error occurred.
+N    */
+Nextern _ARMABI int _vprintf(const char * __restrict /*format*/, __va_list /*arg*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int _vprintf(const char * __restrict  , __va_list  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * is equivalent to vprintf, but does not support floating-point formats.
+N    * You can use instead of vprintf to improve code size.
+N    * Returns: as vprintf.
+N    */
+Nextern _ARMABI int vfprintf(FILE * __restrict /*stream*/,
+Xextern __declspec(__nothrow) int vfprintf(FILE * __restrict  ,
+N                    const char * __restrict /*format*/, __va_list /*arg*/) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * is equivalent to fprintf, with the variable argument list replaced by
+N    * arg, which has been initialised by the va_start macro (and possibly
+N    * subsequent va_arg calls). The vfprintf function does not invoke the
+N    * va_end function.
+N    * Returns: the number of characters transmitted, or a negative value if an
+N    *          output error occurred.
+N    */
+Nextern _ARMABI int vsprintf(char * __restrict /*s*/,
+Xextern __declspec(__nothrow) int vsprintf(char * __restrict  ,
+N                     const char * __restrict /*format*/, __va_list /*arg*/) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * is equivalent to sprintf, with the variable argument list replaced by
+N    * arg, which has been initialised by the va_start macro (and possibly
+N    * subsequent va_arg calls). The vsprintf function does not invoke the
+N    * va_end function.
+N    * Returns: the number of characters written in the array, not counting the
+N    *          terminating null character.
+N    */
+Nextern _ARMABI int __ARM_vsnprintf(char * __restrict /*s*/, size_t /*n*/,
+Xextern __declspec(__nothrow) int __ARM_vsnprintf(char * __restrict  , size_t  ,
+N                     const char * __restrict /*format*/, __va_list /*arg*/) __attribute__((__nonnull__(3)));
+N#if !defined(__STRICT_ANSI__) || (defined(__STDC_VERSION__) && 199901L <= __STDC_VERSION__) || (defined(__cplusplus) && 201103L <= __cplusplus)
+X#if !0L || (1L && 199901L <= 199901L) || (0L && 201103L <= __cplusplus)
+Nextern _ARMABI int vsnprintf(char * __restrict /*s*/, size_t /*n*/,
+Xextern __declspec(__nothrow) int vsnprintf(char * __restrict  , size_t  ,
+N                     const char * __restrict /*format*/, __va_list /*arg*/) __attribute__((__nonnull__(3)));
+N   /*
+N    * is equivalent to snprintf, with the variable argument list replaced by
+N    * arg, which has been initialised by the va_start macro (and possibly
+N    * subsequent va_arg calls). The vsprintf function does not invoke the
+N    * va_end function.
+N    * Returns: the number of characters that would have been written in the
+N    *          array, not counting the terminating null character. As
+N    *          snprintf.
+N    */
+N#endif
+Nextern _ARMABI int _vsprintf(char * __restrict /*s*/,
+Xextern __declspec(__nothrow) int _vsprintf(char * __restrict  ,
+N                      const char * __restrict /*format*/, __va_list /*arg*/) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * is equivalent to vsprintf, but does not support floating-point formats.
+N    * You can use instead of vsprintf to improve code size.
+N    * Returns: as vsprintf.
+N    */
+Nextern _ARMABI int _vfprintf(FILE * __restrict /*stream*/,
+Xextern __declspec(__nothrow) int _vfprintf(FILE * __restrict  ,
+N                     const char * __restrict /*format*/, __va_list /*arg*/) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * is equivalent to vfprintf, but does not support floating-point formats.
+N    * You can use instead of vfprintf to improve code size.
+N    * Returns: as vfprintf.
+N    */
+Nextern _ARMABI int _vsnprintf(char * __restrict /*s*/, size_t /*n*/,
+Xextern __declspec(__nothrow) int _vsnprintf(char * __restrict  , size_t  ,
+N                      const char * __restrict /*format*/, __va_list /*arg*/) __attribute__((__nonnull__(3)));
+N   /*
+N    * is equivalent to vsnprintf, but does not support floating-point formats.
+N    * You can use instead of vsnprintf to improve code size.
+N    * Returns: as vsnprintf.
+N    */
+N#if !defined(__STRICT_ANSI__)
+X#if !0L
+N#pragma __printf_args
+Nextern _ARMABI int asprintf(char ** /*strp*/, const char * __restrict /*format*/, ...) __attribute__((__nonnull__(2)));
+Xextern __declspec(__nothrow) int asprintf(char **  , const char * __restrict  , ...) __attribute__((__nonnull__(2)));
+Nextern _ARMABI int vasprintf(char ** /*strp*/, const char * __restrict /*format*/, __va_list /*arg*/) __attribute__((__nonnull__(2)));
+Xextern __declspec(__nothrow) int vasprintf(char **  , const char * __restrict  , __va_list  ) __attribute__((__nonnull__(2)));
+N#endif
+N#pragma __printf_args
+Nextern _ARMABI int __ARM_asprintf(char ** /*strp*/, const char * __restrict /*format*/, ...) __attribute__((__nonnull__(2)));
+Xextern __declspec(__nothrow) int __ARM_asprintf(char **  , const char * __restrict  , ...) __attribute__((__nonnull__(2)));
+Nextern _ARMABI int __ARM_vasprintf(char ** /*strp*/, const char * __restrict /*format*/, __va_list /*arg*/) __attribute__((__nonnull__(2)));
+Xextern __declspec(__nothrow) int __ARM_vasprintf(char **  , const char * __restrict  , __va_list  ) __attribute__((__nonnull__(2)));
+N   /*
+N    * dynamically allocates a buffer of the right size for the
+N    * formatted string, and returns it in (*strp). Formal return value
+N    * is the same as any other printf variant, except that it returns
+N    * -1 if the buffer could not be allocated.
+N    *
+N    * (The functions with __ARM_ prefixed names are identical to the
+N    * ones without, but are available in all compilation modes without
+N    * violating user namespace.)
+N    */
+N
+Nextern _ARMABI int fgetc(FILE * /*stream*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int fgetc(FILE *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * obtains the next character (if present) as an unsigned char converted to
+N    * an int, from the input stream pointed to by stream, and advances the
+N    * associated file position indicator (if defined).
+N    * Returns: the next character from the input stream pointed to by stream.
+N    *          If the stream is at end-of-file, the end-of-file indicator is
+N    *          set and fgetc returns EOF. If a read error occurs, the error
+N    *          indicator is set and fgetc returns EOF.
+N    */
+Nextern _ARMABI char *fgets(char * __restrict /*s*/, int /*n*/,
+Xextern __declspec(__nothrow) char *fgets(char * __restrict  , int  ,
+N                    FILE * __restrict /*stream*/) __attribute__((__nonnull__(1,3)));
+N   /*
+N    * reads at most one less than the number of characters specified by n from
+N    * the stream pointed to by stream into the array pointed to by s. No
+N    * additional characters are read after a new-line character (which is
+N    * retained) or after end-of-file. A null character is written immediately
+N    * after the last character read into the array.
+N    * Returns: s if successful. If end-of-file is encountered and no characters
+N    *          have been read into the array, the contents of the array remain
+N    *          unchanged and a null pointer is returned. If a read error occurs
+N    *          during the operation, the array contents are indeterminate and a
+N    *          null pointer is returned.
+N    */
+Nextern _ARMABI int fputc(int /*c*/, FILE * /*stream*/) __attribute__((__nonnull__(2)));
+Xextern __declspec(__nothrow) int fputc(int  , FILE *  ) __attribute__((__nonnull__(2)));
+N   /*
+N    * writes the character specified by c (converted to an unsigned char) to
+N    * the output stream pointed to by stream, at the position indicated by the
+N    * asociated file position indicator (if defined), and advances the
+N    * indicator appropriately. If the file position indicator is not defined,
+N    * the character is appended to the output stream.
+N    * Returns: the character written. If a write error occurs, the error
+N    *          indicator is set and fputc returns EOF.
+N    */
+Nextern _ARMABI int fputs(const char * __restrict /*s*/, FILE * __restrict /*stream*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int fputs(const char * __restrict  , FILE * __restrict  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * writes the string pointed to by s to the stream pointed to by stream.
+N    * The terminating null character is not written.
+N    * Returns: EOF if a write error occurs; otherwise it returns a nonnegative
+N    *          value.
+N    */
+Nextern _ARMABI int getc(FILE * /*stream*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int getc(FILE *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * is equivalent to fgetc except that it may be implemented as an unsafe
+N    * macro (stream may be evaluated more than once, so the argument should
+N    * never be an expression with side-effects).
+N    * Returns: the next character from the input stream pointed to by stream.
+N    *          If the stream is at end-of-file, the end-of-file indicator is
+N    *          set and getc returns EOF. If a read error occurs, the error
+N    *          indicator is set and getc returns EOF.
+N    */
+N#ifdef __cplusplus
+S    inline int getchar() { return getc(stdin); }
+N#else
+N    #define getchar() getc(stdin)
+N    extern _ARMABI int (getchar)(void);
+X    extern __declspec(__nothrow) int (getchar)(void);
+N#endif
+N   /*
+N    * is equivalent to getc with the argument stdin.
+N    * Returns: the next character from the input stream pointed to by stdin.
+N    *          If the stream is at end-of-file, the end-of-file indicator is
+N    *          set and getchar returns EOF. If a read error occurs, the error
+N    *          indicator is set and getchar returns EOF.
+N    */
+Nextern _ARMABI char *gets(char * /*s*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) char *gets(char *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * reads characters from the input stream pointed to by stdin into the array
+N    * pointed to by s, until end-of-file is encountered or a new-line character
+N    * is read. Any new-line character is discarded, and a null character is
+N    * written immediately after the last character read into the array.
+N    * Returns: s if successful. If end-of-file is encountered and no characters
+N    *          have been read into the array, the contents of the array remain
+N    *          unchanged and a null pointer is returned. If a read error occurs
+N    *          during the operation, the array contents are indeterminate and a
+N    *          null pointer is returned.
+N    */
+Nextern _ARMABI int putc(int /*c*/, FILE * /*stream*/) __attribute__((__nonnull__(2)));
+Xextern __declspec(__nothrow) int putc(int  , FILE *  ) __attribute__((__nonnull__(2)));
+N   /*
+N    * is equivalent to fputc except that it may be implemented as aan unsafe
+N    * macro (stream may be evaluated more than once, so the argument should
+N    * never be an expression with side-effects).
+N    * Returns: the character written. If a write error occurs, the error
+N    *          indicator is set and putc returns EOF.
+N    */
+N#ifdef __cplusplus
+S    inline int putchar(int __c) { return putc(__c, stdout); }
+N#else
+N    #define putchar(c) putc(c, stdout)
+N    extern _ARMABI int (putchar)(int /*c*/);
+X    extern __declspec(__nothrow) int (putchar)(int  );
+N#endif
+N   /*
+N    * is equivalent to putc with the second argument stdout.
+N    * Returns: the character written. If a write error occurs, the error
+N    *          indicator is set and putc returns EOF.
+N    */
+Nextern _ARMABI int puts(const char * /*s*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int puts(const char *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * writes the string pointed to by s to the stream pointed to by stdout, and
+N    * appends a new-line character to the output. The terminating null
+N    * character is not written.
+N    * Returns: EOF if a write error occurs; otherwise it returns a nonnegative
+N    *          value.
+N    */
+Nextern _ARMABI int ungetc(int /*c*/, FILE * /*stream*/) __attribute__((__nonnull__(2)));
+Xextern __declspec(__nothrow) int ungetc(int  , FILE *  ) __attribute__((__nonnull__(2)));
+N   /*
+N    * pushes the character specified by c (converted to an unsigned char) back
+N    * onto the input stream pointed to by stream. The character will be
+N    * returned by the next read on that stream. An intervening call to the
+N    * fflush function or to a file positioning function (fseek, fsetpos,
+N    * rewind) discards any pushed-back characters. The extern _ARMABIal storage
+N    * corresponding to the stream is unchanged.
+N    * One character pushback is guaranteed. If the unget function is called too
+N    * many times on the same stream without an intervening read or file
+N    * positioning operation on that stream, the operation may fail.
+N    * If the value of c equals that of the macro EOF, the operation fails and
+N    * the input stream is unchanged.
+N    * A successful call to the ungetc function clears the end-of-file
+N    * indicator. The value of the file position indicator after reading or
+N    * discarding all pushed-back characters shall be the same as it was before
+N    * the characters were pushed back. For a text stream, the value of the file
+N    * position indicator after a successful call to the ungetc function is
+N    * unspecified until all pushed-back characters are read or discarded. For a
+N    * binary stream, the file position indicator is decremented by each
+N    * successful call to the ungetc function; if its value was zero before a
+N    * call, it is indeterminate after the call.
+N    * Returns: the character pushed back after conversion, or EOF if the
+N    *          operation fails.
+N    */
+N
+Nextern _ARMABI size_t fread(void * __restrict /*ptr*/,
+Xextern __declspec(__nothrow) size_t fread(void * __restrict  ,
+N                    size_t /*size*/, size_t /*nmemb*/, FILE * __restrict /*stream*/) __attribute__((__nonnull__(1,4)));
+N   /*
+N    * reads into the array pointed to by ptr, up to nmemb members whose size is
+N    * specified by size, from the stream pointed to by stream. The file
+N    * position indicator (if defined) is advanced by the number of characters
+N    * successfully read. If an error occurs, the resulting value of the file
+N    * position indicator is indeterminate. If a partial member is read, its
+N    * value is indeterminate. The ferror or feof function shall be used to
+N    * distinguish between a read error and end-of-file.
+N    * Returns: the number of members successfully read, which may be less than
+N    *          nmemb if a read error or end-of-file is encountered. If size or
+N    *          nmemb is zero, fread returns zero and the contents of the array
+N    *          and the state of the stream remain unchanged.
+N    */
+N
+Nextern _ARMABI size_t __fread_bytes_avail(void * __restrict /*ptr*/,
+Xextern __declspec(__nothrow) size_t __fread_bytes_avail(void * __restrict  ,
+N                    size_t /*count*/, FILE * __restrict /*stream*/) __attribute__((__nonnull__(1,3)));
+N   /*
+N    * reads into the array pointed to by ptr, up to count characters from the
+N    * stream pointed to by stream. The file position indicator (if defined)
+N    * is advanced by the number of characters successfully read. If an error
+N    * occurs, the resulting value of the file position indicator is
+N    * indeterminate. The ferror or feof function shall be used to
+N    * distinguish between a read error and end-of-file.  The call will block
+N    * only if no characters are available.
+N    * Returns: the number of characters successfully read, which may be less than
+N    *          count. If count is zero, __fread_bytes_avail returns zero and
+N    *          the contents of the array and the state of the stream remain
+N    *          unchanged.
+N    */
+N
+Nextern _ARMABI size_t fwrite(const void * __restrict /*ptr*/,
+Xextern __declspec(__nothrow) size_t fwrite(const void * __restrict  ,
+N                    size_t /*size*/, size_t /*nmemb*/, FILE * __restrict /*stream*/) __attribute__((__nonnull__(1,4)));
+N   /*
+N    * writes, from the array pointed to by ptr up to nmemb members whose size
+N    * is specified by size, to the stream pointed to by stream. The file
+N    * position indicator (if defined) is advanced by the number of characters
+N    * successfully written. If an error occurs, the resulting value of the file
+N    * position indicator is indeterminate.
+N    * Returns: the number of members successfully written, which will be less
+N    *          than nmemb only if a write error is encountered.
+N    */
+N
+Nextern _ARMABI int fgetpos(FILE * __restrict /*stream*/, fpos_t * __restrict /*pos*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int fgetpos(FILE * __restrict  , fpos_t * __restrict  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * stores the current value of the file position indicator for the stream
+N    * pointed to by stream in the object pointed to by pos. The value stored
+N    * contains unspecified information usable by the fsetpos function for
+N    * repositioning the stream to its position at the time  of the call to the
+N    * fgetpos function.
+N    * Returns: zero, if successful. Otherwise nonzero is returned and the
+N    *          integer expression errno is set to an implementation-defined
+N    *          nonzero value.
+N    */
+Nextern _ARMABI int fseek(FILE * /*stream*/, long int /*offset*/, int /*whence*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int fseek(FILE *  , long int  , int  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * sets the file position indicator for the stream pointed to by stream.
+N    * For a binary stream, the new position is at the signed number of
+N    * characters specified by offset away from the point specified by whence.
+N    * The specified point is the beginning of the file for SEEK_SET, the
+N    * current position in the file for SEEK_CUR, or end-of-file for SEEK_END.
+N    * A binary stream need not meaningfully support fseek calls with a whence
+N    * value of SEEK_END.
+N    * For a text stream, either offset shall be zero, or offset shall be a
+N    * value returned by an earlier call to the ftell function on the same
+N    * stream and whence shall be SEEK_SET.
+N    * The fseek function clears the end-of-file indicator and undoes any
+N    * effects of the ungetc function on the same stream. After an fseek call,
+N    * the next operation on an update stream may be either input or output.
+N    * Returns: nonzero only for a request that cannot be satisfied.
+N    */
+Nextern _ARMABI int fsetpos(FILE * __restrict /*stream*/, const fpos_t * __restrict /*pos*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int fsetpos(FILE * __restrict  , const fpos_t * __restrict  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * sets  the file position indicator for the stream pointed to by stream
+N    * according to the value of the object pointed to by pos, which shall be a
+N    * value returned by an earlier call to the fgetpos function on the same
+N    * stream.
+N    * The fsetpos function clears the end-of-file indicator and undoes any
+N    * effects of the ungetc function on the same stream. After an fsetpos call,
+N    * the next operation on an update stream may be either input or output.
+N    * Returns: zero, if successful. Otherwise nonzero is returned and the
+N    *          integer expression errno is set to an implementation-defined
+N    *          nonzero value.
+N    */
+Nextern _ARMABI long int ftell(FILE * /*stream*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) long int ftell(FILE *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * obtains the current value of the file position indicator for the stream
+N    * pointed to by stream. For a binary stream, the value is the number of
+N    * characters from the beginning of the file. For a text stream, the file
+N    * position indicator contains unspecified information, usable by the fseek
+N    * function for returning the file position indicator to its position at the
+N    * time of the ftell call; the difference between two such return values is
+N    * not necessarily a meaningful measure of the number of characters written
+N    * or read.
+N    * Returns: if successful, the current value of the file position indicator.
+N    *          On failure, the ftell function returns -1L and sets the integer
+N    *          expression errno to an implementation-defined nonzero value.
+N    */
+Nextern _ARMABI void rewind(FILE * /*stream*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) void rewind(FILE *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * sets the file position indicator for the stream pointed to by stream to
+N    * the beginning of the file. It is equivalent to
+N    *          (void)fseek(stream, 0L, SEEK_SET)
+N    * except that the error indicator for the stream is also cleared.
+N    * Returns: no value.
+N    */
+N
+Nextern _ARMABI void clearerr(FILE * /*stream*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) void clearerr(FILE *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * clears the end-of-file and error indicators for the stream pointed to by
+N    * stream. These indicators are cleared only when the file is opened or by
+N    * an explicit call to the clearerr function or to the rewind function.
+N    * Returns: no value.
+N    */
+N
+Nextern _ARMABI int feof(FILE * /*stream*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int feof(FILE *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * tests the end-of-file indicator for the stream pointed to by stream.
+N    * Returns: nonzero iff the end-of-file indicator is set for stream.
+N    */
+Nextern _ARMABI int ferror(FILE * /*stream*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int ferror(FILE *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * tests the error indicator for the stream pointed to by stream.
+N    * Returns: nonzero iff the error indicator is set for stream.
+N    */
+Nextern _ARMABI void perror(const char * /*s*/);
+Xextern __declspec(__nothrow) void perror(const char *  );
+N   /*
+N    * maps the error number  in the integer expression errno to an error
+N    * message. It writes a sequence of characters to the standard error stream
+N    * thus: first (if s is not a null pointer and the character pointed to by
+N    * s is not the null character), the string pointed to by s followed by a
+N    * colon and a space; then an appropriate error message string followed by
+N    * a new-line character. The contents of the error message strings are the
+N    * same as those returned by the strerror function with argument errno,
+N    * which are implementation-defined.
+N    * Returns: no value.
+N    */
+N
+Nextern _ARMABI int _fisatty(FILE * /*stream*/ ) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) int _fisatty(FILE *   ) __attribute__((__nonnull__(1)));
+N    /* Returns 1 if the stream is tty (stdin), 0 otherwise. Not ANSI compliant.
+N     */
+N
+Nextern _ARMABI void __use_no_semihosting_swi(void);
+Xextern __declspec(__nothrow) void __use_no_semihosting_swi(void);
+Nextern _ARMABI void __use_no_semihosting(void);
+Xextern __declspec(__nothrow) void __use_no_semihosting(void);
+N    /*
+N     * Referencing either of these symbols will cause a link-time
+N     * error if any library functions that use semihosting SWI
+N     * calls are also present in the link, i.e. you define it if
+N     * you want to make sure you haven't accidentally used any such
+N     * SWIs.
+N     */
+N
+N    #ifdef __cplusplus
+S        }  /* extern "C" */
+S      }  /* namespace std */
+N    #endif
+N  #endif /* __STDIO_DECLS */
+N
+N  #if _AEABI_PORTABILITY_LEVEL != 0 && !defined _AEABI_PORTABLE
+X  #if _AEABI_PORTABILITY_LEVEL != 0 && !0L
+S    #define _AEABI_PORTABLE
+N  #endif
+N
+N  #if defined(__cplusplus) && !defined(__STDIO_NO_EXPORTS)
+X  #if 0L && !0L
+S    using ::std::size_t;
+S    using ::std::fpos_t;
+S    using ::std::FILE;
+S    using ::std::remove;
+S    using ::std::rename;
+S    using ::std::tmpfile;
+S    using ::std::tmpnam;
+S    using ::std::fclose;
+S    using ::std::fflush;
+S    using ::std::fopen;
+S    using ::std::freopen;
+S    using ::std::setbuf;
+S    using ::std::setvbuf;
+S    using ::std::fprintf;
+S    using ::std::_fprintf;
+S    using ::std::printf;
+S    using ::std::_printf;
+S    using ::std::sprintf;
+S    using ::std::_sprintf;
+S    #if !defined(__STRICT_ANSI__) || (defined(__STDC_VERSION__) && 199901L <= __STDC_VERSION__) || (defined(__cplusplus) && 201103L <= __cplusplus)
+S      using ::std::snprintf;
+S      using ::std::vsnprintf;
+S      using ::std::vfscanf;
+S      using ::std::vscanf;
+S      using ::std::vsscanf;
+S    #endif
+S    using ::std::_snprintf;
+S    using ::std::_vsnprintf;
+S#if !defined(__STRICT_ANSI__)
+S    using ::std::asprintf;
+S    using ::std::vasprintf;
+S#endif
+S    using ::std::__ARM_asprintf;
+S    using ::std::__ARM_vasprintf;
+S    using ::std::__ARM_vsnprintf;
+S    using ::std::__ARM_snprintf;
+S    using ::std::__ARM_vsscanf;
+S    using ::std::fscanf;
+S    using ::std::_fscanf;
+S    using ::std::scanf;
+S    using ::std::_scanf;
+S    using ::std::sscanf;
+S    using ::std::_sscanf;
+S    using ::std::_vfscanf;
+S    using ::std::_vscanf;
+S    using ::std::_vsscanf;
+S    using ::std::vprintf;
+S    using ::std::_vprintf;
+S    using ::std::vfprintf;
+S    using ::std::_vfprintf;
+S    using ::std::vsprintf;
+S    using ::std::_vsprintf;
+S    using ::std::fgetc;
+S    using ::std::fgets;
+S    using ::std::fputc;
+S    using ::std::fputs;
+S    using ::std::getc;
+S    using ::std::getchar;
+S    using ::std::gets;
+S    using ::std::putc;
+S    using ::std::putchar;
+S    using ::std::puts;
+S    using ::std::ungetc;
+S    using ::std::fread;
+S    using ::std::__fread_bytes_avail;
+S    using ::std::fwrite;
+S    using ::std::fgetpos;
+S    using ::std::fseek;
+S    using ::std::fsetpos;
+S    using ::std::ftell;
+S    using ::std::rewind;
+S    using ::std::clearerr;
+S    using ::std::feof;
+S    using ::std::ferror;
+S    using ::std::perror;
+S    using ::std::_fisatty;
+S    using ::std::__use_no_semihosting_swi;
+S    using ::std::__use_no_semihosting;
+N  #endif
+N
+N#endif /* ndef __stdio_h */
+N
+N/* end of stdio.h */
+N
+L 11 "..\..\..\..\common\include\dbg.h" 2
+N#include "ipc.h"
+L 1 "..\..\..\..\common\include\ipc.h" 1
+N/*
+N * Kneron IPC Header for KL520
+N *
+N * Copyright (C) 2018-2019 Kneron, Inc. All rights reserved.
+N *
+N */
+N
+N#ifndef KNERON_IPC_H
+N#define KNERON_IPC_H
+N
+N#include <stdint.h>
+N#include "model_type.h"
+L 1 "..\..\..\..\common\include\model_type.h" 1
+N#ifndef __MODEL_TYPE_H
+N#define __MODEL_TYPE_H
+N
+N
+Nenum model_type {
+N#if 0
+S    INVALID_ID,
+S    KNERON_FDSMALLBOX                   = 1,
+S    KNERON_FDANCHOR                     = 2,
+S    KNERON_FDSSD                        = 32,
+S    AVERAGE_POOLING                     = 4,
+S    KNERON_LM_5PTS                      = 5,
+S    KNERON_LM_68PTS                     = 6,
+S    KNERON_LM_150PTS                    = 7,
+S    //KNERON_FR_RES50                     = 8,
+S    KNERON_FR_RES34                     = 9,
+S    KNERON_FR_VGG10                     = 8,
+S    KNERON_TINY_YOLO_PERSON             = 11,
+S    KNERON_3D_LIVENESS                  = 12,
+S    KNERON_GESTURE_RETINANET            = 13,
+S    TINY_YOLO_VOC                       = 14,
+S    IMAGENET_CLASSIFICATION_RES50       = 15,
+S    IMAGENET_CLASSIFICATION_RES34       = 16,
+S    IMAGENET_CLASSIFICATION_INCEPTION_V3= 17,
+S    IMAGENET_CLASSIFICATION_MOBILENET_V2= 18,
+S    TINY_YOLO_V3                        = 19,
+S	KNERON_2D_LIVENESS                  = 20,
+S    KNERON_FD_RETINANET                 = 21,
+S    KNERON_SSD_PERSON                   = 22,
+S    KNERON_AGE_GENDER                   = 23,
+S	KNERON_NIR_LIVENESS                 = 30,
+S    KNERON_FUSE_LIVENESS                = 41,
+S	KNERON_CV_LIVENESS                  = 26,
+S    KNERON_OD_MBSSD                     = 27,
+S    KNERON_AGE_GROUP                    = 28,
+S    KNERON_LM_S_5PTS                    = 55,
+S    //KNERON_NIR_HSN_LIVENESS             = 32,
+S    KNERON_LM_EYE_LID                   = 42,
+S    KNERON_FACE_QUALITY                 = 40,
+S    KNERON_RGB_LIVENESS                 = 57,
+S    KNERON_NIR_OCCLUDE                  = 51,
+S    UPHOTON_LIVENESS                    = 1001,
+S		KNERON_FACESEG_DLA34_128_128_3      = 58
+N#endif
+N    UPHOTON_LIVENESS                    = 1001,
+N	INVALID_TYPE = 0,
+N	KNERON_FD_SMALLBOX_200_200_3 = 1,
+N	KNERON_FD_ANCHOR_200_200_3 = 2,
+N	KNERON_FD_MBSSD_200_200_3= 3,
+N	AVERAGE_POOLING = 4, //use with FD smallbox and don't use anymore
+N	KNERON_LM_5PTS_ONET_56_56_3 = 5,
+N	KNERON_LM_68PTS_dlib_112_112_3 = 6,
+N	KNERON_LM_150PTS = 7,
+N	KNERON_FR_RES50_112_112_3 = 8,
+N    //KNERON_FR_RES50_COMPACT=39,
+N	KNERON_FR_RES34 = 9,
+N	KNERON_FR_VGG10 = 10,
+N	KNERON_TINY_YOLO_PERSON_416_416_3 = 11,
+N	KNERON_3D_LIVENESS = 12, //has two inputs: depth and RGB
+N	KNERON_GESTURE_RETINANET_320_320_3 = 13,
+N	TINY_YOLO_VOC_224_224_3 = 14,
+N	IMAGENET_CLASSIFICATION_RES50_224_224_3 = 15,
+N	IMAGENET_CLASSIFICATION_RES34_224_224_3 = 16,
+N	IMAGENET_CLASSIFICATION_INCEPTION_V3_224_224_3 = 17,
+N	IMAGENET_CLASSIFICATION_MOBILENET_V2_224_224_3 = 18,
+N	TINY_YOLO_V3_224_224_3 = 19,
+N	KNERON_2D_LIVENESS_224_224_3 = 20, //oldest rgb liveness model and don't use anymore
+N	KNERON_FD_RETINANET_256_256_3 = 21,
+N	KNERON_PERSON_MOBILENETSSD_224_224_3 = 22,
+N	KNERON_AGE_GENDER = 23, //oldest age gender model and don't use anymore 
+N	KNERON_LM_5PTS_BLUR_ONET_48_48_3 = 24,
+N	KNERON_2D_LIVENESS_V3_FACEBAGNET_224_224_3 = 25,
+N    KNERON_AGE_GENDER_V2_RES18_128_128_3 = 26,
+N	KNERON_OD_MBSSD = 27, //HW model and don't know input size
+N	KNERON_PD_MBSSD = 28, //HW model and don't know which version and input size
+N	KNERON_FR_MASK_RES50_112_112_3 = 29, 
+N	KNERON_NIR_LIVENESS_RES18_112_112_3 = 30,
+N	KNERON_FR_MASK_RES101_112_112_3 = 31,
+N    KNERON_FD_MASK_MBSSD_200_200_3 = 32,	
+N    TINY_YOLO_V3_416_416_3 = 33,
+N    TINY_YOLO_V3_608_608_3 = 34,
+N
+N	//Category Face related 40~200
+N	KNERON_CAT_FACE = 40,
+N	KNERON_FACE_QAULITY_ONET_56_56_1 = KNERON_CAT_FACE,
+N	KNERON_FUSE_LIVENESS = KNERON_CAT_FACE +1, // don't know the model backbone and input size of fuse liveness model
+N	KNERON_EYELID_DETECTION_ONET_48_48_3 = KNERON_CAT_FACE +2,
+N	KNERON_YAWN_DETECTION_PFLD_112_112_3 = KNERON_CAT_FACE +3,
+N	KNERON_DBFACE_MBNET_V2_480_864_3 = KNERON_CAT_FACE +4,
+N	KNERON_FILTER = KNERON_CAT_FACE +5, //No model inference, just pre and post-process
+N	KNERON_ALIGNMENT = KNERON_CAT_FACE +6, //No model inference, just preprocess
+N	KNERON_FACE_EXPRESSION_112_112_3 = KNERON_CAT_FACE +7,
+N	KNERON_RBG_OCCLUSION_RES18_112_112_3 = KNERON_CAT_FACE +8,
+N	KNERON_LM2BBOX = KNERON_CAT_FACE + 9, //No model inference, just post-process
+N	KNERON_PUPIL_ONET_48_48_3 = KNERON_CAT_FACE +10,
+N    KNERON_NIR_OCCLUSION_RES18_112_112_3 = KNERON_CAT_FACE +11,
+N    KNERON_HEAD_SHOULDER_MBNET_V2_112_112_3 = KNERON_CAT_FACE + 12,
+N    KNERON_RGB_LIVENESS_RES18_112_112_3 = KNERON_CAT_FACE +13, 
+N	KNERON_MOUTH_LM_v1_56_56_1 = KNERON_CAT_FACE +14,    //nose, upper lip middle, chin, two sides of faces
+N	KNERON_MOUTH_LM_v2_56_56_1 = KNERON_CAT_FACE +15,    //nose, upper/lower lip middle, two sides of faces
+N	KNERON_PUPIL_ONET_48_48_1 = KNERON_CAT_FACE +16,
+N    KNERON_RGB_LIVENESS_MBV2_112_112_3 = KNERON_CAT_FACE +17,
+N    KNERON_FACESEG_DLA34_128_128_3 = KNERON_CAT_FACE +18,
+N    KNERON_OCC_CLS = KNERON_CAT_FACE +19, //no model inference, just post-process
+N    KNERON_LMSEG_FUSE = KNERON_CAT_FACE+20, //no model inference, just post-process
+N    KNERON_FUSE_LIVENESS_850 = 65,
+N    KNERON_FUSE_SC035        = 98,
+N    KNERON_FUSE_DUAL_1054    = 103,
+N    KNERON_FUSE_LIVENESS_850_940 = 77,
+N    KNERON_FACE_POSE = 68,
+N    KNERON_FUSE_NIR_LV = 76,
+N
+N    KNERON_FD_ROTATE=63,
+N    KNERON_LM_ROTATE=64,
+N    KNERON_FACE_POSE_ROTATE=71,
+N    KNERON_NIR_LV_ROTATE=72,
+N    KNERON_HSN_LV_ROTATE=81,
+N    KNERON_LM_S_ROTATE=87,
+N    KNERON_LM_PLUS_ROTATE=93,
+N    KNERON_FD_FCOS_ROTATE=94,
+N    KNERON_NIR_LV_ROTATE_1054=104,
+N    KNERON_FD_FCOS_ROTATE_1054=106,
+N    KNERON_HSN_LV_ROTATE_1054=109,
+N    KNERON_NIR_COMBO_ROTATE_1054=111,
+N    KNERON_FR_RES50_1054=39,
+N
+N    KNERON_FACE_PUPIL_CLS2_48_48_3 = KNERON_CAT_FACE +52,
+N    
+N    KNERON_FACE_PUPIL_ROTATE_CLS2_48_48_3 = KNERON_CAT_FACE +56,
+N    KNERON_FACESEG_DLA34_rotate_128_128_3 = KNERON_CAT_FACE +60,
+N    KNERON_FACESEG_ROTATE = 119,
+N    KNERON_TOF_FR50M_112_112_3 = 120,
+N
+N	//Category Object Detection related 200~300
+N	KNERON_OB_DETECT = 200,
+N	KNERON_OBJECTDETECTION_CENTERNET_512_512_3 = KNERON_OB_DETECT,
+N	KNERON_OBJECTDETECTION_FCOS_416_416_3 = KNERON_OB_DETECT +1,
+N	KNERON_PD_MBNET_V2_480_864_3 = KNERON_OB_DETECT +2, //16:9 aspect ratio
+N	KNERON_CAR_DETECTION_MBSSD_224_416_3 = KNERON_OB_DETECT +3,
+N	KNERON_PD_CROP_MBSSD_304_304_3 = KNERON_OB_DETECT +4,
+N	YOLO_V3_416_416_3 = KNERON_OB_DETECT +5,
+N	YOLO_V4_416_416_3 = KNERON_OB_DETECT +6,
+N	KNERON_CAR_DETECTION_YOLO_V5_352_640_3 = KNERON_OB_DETECT +7,
+N	KNERON_LICENSE_DETECT_WPOD_208_416_3 = KNERON_OB_DETECT +8,
+N	KNERON_2D_UPPERBODY_KEYPOINT_RES18_384_288_3 = KNERON_OB_DETECT +9,
+N	YOLO_V3_608_608_3 = KNERON_OB_DETECT +10,
+N    KNERON_YOLOV5S_640_640_3 = KNERON_OB_DETECT +11,
+N    KNERON_YOLOV5S_480_256_3 = KNERON_OB_DETECT + 12,
+N    KNERON_SITTINGPOSTURE_RESNET34_288_384_3 = KNERON_OB_DETECT + 13,
+N    KNERON_PERSONDETECTION_FCOS_416_416_3 = KNERON_OB_DETECT +14,
+N    KNERON_YOLOV5m_640_640_3 = KNERON_OB_DETECT +15,
+N    KNERON_YOLOV5S6_480_256_3 = KNERON_OB_DETECT + 16,
+N    KNERON_PERSONDETECTION_FCOS_384_288_3 = KNERON_OB_DETECT +17,
+N    KNERON_PERSONDETECTION_FCOS_720_416_3 = KNERON_OB_DETECT +18,
+N    KNERON_PERSONDETECTION_dbface_864_480_3 = KNERON_OB_DETECT +19,
+N        
+N
+N	//Category OCR related 300~400
+N	KNERON_OCR = 300,
+N	KNERON_LICENSE_OCR_MBNET_64_160_3 = KNERON_OCR,
+N	KNERON_WATERMETER_OCR_MBNET = KNERON_OCR +1, //unknown
+N
+N
+N	//Category SDK test related
+N	KNERON_CAT_SDK_TEST = 1000,
+N	KNERON_SDK_FD = KNERON_CAT_SDK_TEST,
+N	KNERON_SDK_LM = KNERON_CAT_SDK_TEST +1,
+N	KNERON_SDK_FR = KNERON_CAT_SDK_TEST +2,
+N	
+N	// Category Function Runner related 2000
+N    KNERON_FUNCTION = 2000,
+N    KNERON_FUNCTION_NIRLIVENESS_CLS = KNERON_FUNCTION,
+N    KNERON_FUNCTION_OCC_CLS = KNERON_FUNCTION +1,
+N    KNERON_FUNCTION_LMSEG_FUSE = KNERON_FUNCTION +2, 
+N    KNERON_FUNCTION_FILTER_SCORE = KNERON_FUNCTION +3,
+N
+N	//Category Customer models
+N	//0x8000 = 32768
+N	CUSTOMER = 32768,
+N
+N	Count
+N
+N};
+N#endif
+L 13 "..\..\..\..\common\include\ipc.h" 2
+N#include "model_res.h"
+L 1 "..\..\..\..\common\include\model_res.h" 1
+N#ifndef __MODEL_RES_H__
+N#define __MODEL_RES_H__
+N
+N/* These header defines structures shared by scpu/ncpu/host_lib */
+N
+N#define LAND_MARK_POINTS       5
+N#define EYE_LID_LM_POINTS      7
+N#define FR_FEATURE_MAP_SIZE    512
+N#define LV_R_SIZE              1
+N#define LV_SCORE_SIZE          2
+N#define DUAL_LAND_MARK_POINTS  10
+N#define DME_OBJECT_MAX         80
+N#define IMAGENET_TOP_MAX       5
+N#define HAND_KEY_POINTS        7
+N
+N/* Yolo Result */
+Nstruct bounding_box_s {
+N    float x1;      // top-left corner: x
+N    float y1;      // top-left corner: y
+N    float x2;      // bottom-right corner: x
+N    float y2;      // bottom-right corner: y
+N    float score;   // probability score
+N    int32_t class_num; // class # (of many) with highest probability
+N};
+N
+Nstruct yolo_result_s {
+N    uint32_t class_count;            // total class count
+N    uint32_t box_count;              // boxes of all classes
+N    struct bounding_box_s boxes[1];  // box_count
+N};
+N
+Nstruct age_gender_result_s {
+N    uint32_t age;
+N    uint8_t ismale;
+N};
+N
+Nstruct imagenet_result_s {
+N    int32_t   index; // index of the class
+N    float score; // probability score of the class
+N};
+N
+Nstruct facedet_result_s {
+N    int32_t len;
+N    int32_t xywh[4]; // 4 values for X, Y, W, H
+N    float xywh_fl[4]; // 4 values for X, Y, W, H
+N    float score;     //prob score
+N    int32_t class_num; //class
+N};
+N
+Nstruct landmark_result_s {
+N    struct {
+N        uint32_t x;
+N        uint32_t y;
+N        float    x_f;
+N        float    y_f;
+N    } marks[LAND_MARK_POINTS];
+X    } marks[5];
+N    float score;
+N    float blur;
+N};
+N
+Nstruct hand_kp_result_s {
+N    struct {
+N        float    x_f;
+N        float    y_f;
+N    } marks[HAND_KEY_POINTS];
+X    } marks[7];
+N    float score;
+N};
+N
+Nstruct eye_lid_lm_result_s {
+N    struct {
+N        uint32_t x;
+N        uint32_t y;
+N    } marks[EYE_LID_LM_POINTS];
+X    } marks[7];
+N    float score;
+N};
+N
+Nstruct face_occlude_result_s {
+N    float yaw;
+N    float pitch;
+N    float roll;
+N    float occ;
+N    float seg_res[7];
+N};
+N
+Nstruct age_group_result_s {
+N    int32_t age;
+N};
+N
+Nstruct face_quality_result_s {
+N    float face_score;
+N};
+N
+Nstruct fr_result_s {
+N    float feature_map[FR_FEATURE_MAP_SIZE];
+X    float feature_map[512];
+N};
+N
+N/* by larry lai */
+N
+Nstruct lv_result_s{
+N    int32_t  real[LV_R_SIZE];
+X    int32_t  real[1];
+N    float    score[LV_SCORE_SIZE];
+X    float    score[2];
+N    _Bool    wb_result;
+N    float    nir_luma_ratio;
+N    uint8_t  rgb_quality;
+N    uint8_t  rgb_corner_y;
+N    float    effect_2d;
+N    uint8_t  cal_nir_led_on_tile;
+N    uint8_t  cal_distance;
+N    float    id_ref_c;   
+N};
+N
+Nstruct dual_landmarks_s {
+N    struct {
+N        uint32_t x;
+N        uint32_t y;
+N    } marks[DUAL_LAND_MARK_POINTS];
+X    } marks[10];
+N};
+N
+Ntypedef struct {
+N    struct bounding_box_s fd_res;
+N    struct age_gender_result_s ag_res;
+N} fd_age_gender_res;
+N
+Ntypedef struct {
+N    uint32_t class_count; // total class count
+N    uint32_t box_count;   // boxes of all classes
+N    struct bounding_box_s boxes[DME_OBJECT_MAX]; // box information
+X    struct bounding_box_s boxes[80]; 
+N} dme_res;
+N
+N#endif
+L 14 "..\..\..\..\common\include\ipc.h" 2
+N
+N/* IPC memory */
+N//----------------------------
+N/* N i/d RAM */
+N#ifdef TARGET_NCPU
+S#define S_D_RAM_ADDR                0x20200000
+S#define N_D_RAM_ADDR                0x0FFF0000
+N#endif
+N#ifdef TARGET_SCPU
+N#define S_D_RAM_ADDR                0x10200000
+N#define N_D_RAM_ADDR                0x2FFF0000
+N#endif
+N
+N#define S_D_RAM_SIZE                0x18000          /* 96 KB */
+N#define N_D_RAM_SIZE                0x10000          /* 64 KB */
+N
+N#define IPC_RAM_SIZE                0x2000           /* 8K Bytes : split 7 : 1 */
+N#define IPC_MEM_OFFSET              (S_D_RAM_SIZE - IPC_RAM_SIZE)
+N#define IPC_MEM_OFFSET2             (S_D_RAM_SIZE - IPC_RAM_SIZE / 8)
+N#define IPC_MEM_ADDR                (S_D_RAM_ADDR + IPC_MEM_OFFSET)
+N#define IPC_MEM_ADDR2               (S_D_RAM_ADDR + IPC_MEM_OFFSET2)
+N//----------------------------
+N
+N#define SCPU2NCPU_ID		('s'<<24 | 'c'<<16 | 'p'<<8 | 'u')
+N#define NCPU2SCPU_ID		('n'<<24 | 'c'<<16 | 'p'<<8 | 'u')
+N
+N#define MULTI_MODEL_MAX         16      /* Max active models in memory */
+N#define IPC_IMAGE_ACTIVE_MAX    2       /* Max active images for NCPU/NPU */
+N#define IPC_COM_PAX             IPC_IMAGE_ACTIVE_MAX
+N#define IPC_IMAGE_MAX           5       /* Max cycled buffer for images */
+N
+N/* Image process cmd_flags set by scpu */
+N#define IMAGE_STATE_INACTIVE                0
+N#define IMAGE_STATE_ACTIVE                  1
+N#define IMAGE_STATE_RECEIVING               2
+N
+N/* Image process status set by ncpu */
+N#define IMAGE_STATE_IDLE                    0
+N#define IMAGE_STATE_NPU_BUSY                1
+N#define IMAGE_STATE_NPU_DONE                2
+N#define IMAGE_STATE_POST_PROCESSING         IMAGE_STATE_NPU_DONE
+N#define IMAGE_STATE_POST_PROCESSING_DONE    3
+N#define IMAGE_STATE_DONE                    IMAGE_STATE_POST_PROCESSING_DONE
+N
+N#define IMAGE_STATE_PREPROC_ERROR           (-1)
+N#define IMAGE_STATE_NPU_ERROR               (-2)
+N
+N/* Image format flags */
+N#define IMAGE_FORMAT_SUB128                 BIT31
+N#define IMAGE_FORMAT_ROT_MASK               (BIT30 | BIT29)
+N#define IMAGE_FORMAT_ROT_SHIFT              29
+N#define IMAGE_FORMAT_ROT_CLOCKWISE          0x01
+N#define IMAGE_FORMAT_ROT_COUNTER_CLOCKWISE  0x02
+N
+N#define IMAGE_FORMAT_RAW_OUTPUT             BIT28
+N#define IMAGE_FORMAT_PARALLEL_PROC          BIT27
+N
+N#define IMAGE_FORMAT_MODEL_AGE_GENDER       BIT24
+N
+N#define IMAGE_FORMAT_SYMMETRIC_PADDING      BIT21
+N#define IMAGE_FORMAT_PAD_MODE               (BIT21 | BIT20)
+N#define IMAGE_FORMAT_PAD_SHIFT              20
+N
+N
+N#define IMAGE_FORMAT_CHANGE_ASPECT_RATIO    BIT20
+N
+N#define IMAGE_FORMAT_BYPASS_PRE             BIT19
+N#define IMAGE_FORMAT_BYPASS_NPU_OP          BIT18
+N#define IMAGE_FORMAT_BYPASS_CPU_OP          BIT17
+N#define IMAGE_FORMAT_BYPASS_POST            BIT16
+N
+N/* Padding mode */
+N#define NPU_PAD_RIGHT_BOTTOM 0
+N#define NPU_PAD_NONE         1
+N#define NPU_PAD_SYMMETRIC    2
+N#define NPU_PAD_PREDEFINED   3
+N
+N
+N#define IMAGE_FORMAT_NPU            0x00FF
+N#define NPU_FORMAT_RGBA8888         0x00
+N#define NPU_FORMAT_NIR              0x20
+N/* Support YCBCR (YUV) */
+N#define NPU_FORMAT_YCBCR422         0x30
+N#define NPU_FORMAT_YCBCR444         0x50
+N#define NPU_FORMAT_RGB565           0x60
+N
+N/* Determine the exact format with the data byte sequence in DDR memory: [lowest byte]...[highest byte] */
+N#define NPU_FORMAT_YCBCR422_CRY1CBY0 0x30
+N#define NPU_FORMAT_YCBCR422_CBY1CRY0 0x31
+N#define NPU_FORMAT_YCBCR422_Y1CRY0CB 0x32
+N#define NPU_FORMAT_YCBCR422_Y1CBY0CR 0x33
+N#define NPU_FORMAT_YCBCR422_CRY0CBY1 0x34
+N#define NPU_FORMAT_YCBCR422_CBY0CRY1 0x35
+N#define NPU_FORMAT_YCBCR422_Y0CRY1CB 0x36
+N#define NPU_FORMAT_YCBCR422_Y0CBY1CR 0x37  // Y0CbY1CrY2CbY3Cr...
+N
+N/* Model structure */
+Nstruct kdp_model_s {
+N    /* Model type */
+N    uint32_t    model_type; //defined in model_type.h
+N
+N    /* Model version */
+N    uint32_t    model_version;
+N
+N    /* Input in memory */
+N    uint32_t    input_mem_addr;
+N    int32_t     input_mem_len;
+N	
+N    /* Output in memory */
+N    uint32_t    output_mem_addr;
+N    int32_t     output_mem_len;
+N
+N    /* Working buffer */
+N    uint32_t    buf_addr;
+N    int32_t     buf_len;
+N
+N    /* command.bin in memory */
+N    uint32_t    cmd_mem_addr;
+N    int32_t     cmd_mem_len;
+N
+N    /* weight.bin in memory */
+N    uint32_t    weight_mem_addr;
+N    int32_t     weight_mem_len;
+N
+N    /* setup.bin in memory */
+N    uint32_t    setup_mem_addr;
+N    int32_t     setup_mem_len;
+N};
+Ntypedef struct kdp_model_s kdp_model_info_t;
+N
+N/* Result structure of a model */
+Nstruct result_buf_s {
+N    int32_t     model_id;
+N    uint32_t    result_mem_addr;
+N    int32_t     result_mem_len;
+N    int32_t     result_ret_len;
+N};
+N
+N#define MAX_PARAMS_LEN          40 /* uint32_t */
+N
+Nstruct kdp_img_cfg {
+N    uint32_t image_mem_addr;
+N    int32_t image_mem_len;
+N    int32_t image_col;
+N    int32_t image_row;
+N    int32_t image_ch;
+N    uint32_t image_format;
+N    uint32_t image_buf_active_index; // scpu_to_ncpu->active_img_index
+N};
+N
+Nstruct kdp_crop_box_s {
+N    int32_t top;
+N    int32_t bottom;
+N    int32_t left;
+N    int32_t right;
+N};
+N
+Nstruct kdp_pad_value_s {
+N    int32_t pad_top;
+N    int32_t pad_bottom;
+N    int32_t pad_left;
+N    int32_t pad_right;
+N};
+N
+N/* Parameter structure of a raw image */
+Nstruct parameter_s {
+N    /* Crop parameters or other purposes */
+N    int         crop_top;
+N    int         crop_bottom;
+N    int         crop_left;
+N    int         crop_right;
+N
+N    /* Pad parameters or other purposes */
+N    int         pad_top;
+N    int         pad_bottom;
+N    int         pad_left;
+N    int         pad_right;
+N    int         flip_face;  // for fr, 0 to not, 1 to flip
+N
+N    /* Shared parameters */
+N    uint32_t    params[MAX_PARAMS_LEN];
+X    uint32_t    params[40];
+N
+N    uint32_t    dual_landmarks[20];
+N    uint32_t    dual_landmarks_3d[20];
+N    uint8_t     init_tile;
+N    uint8_t     nir_mode;
+N    float       init_nir_gain;
+N    float       nir_gain;
+N    uint32_t    nir_cur_exp_time;
+N    uint32_t    calibration_count;
+N    float       registered_offsetX;
+N    float       registered_offsetY;
+N    uint8_t     rgb_led_flag;
+N    uint8_t     rgb_avg_luma;
+N    float       x_scaling;
+N    uint8_t     d_offset;
+N    uint8_t     pass_type;
+N    _Bool       ignore_rgb_led;
+N    _Bool       bctc;
+N    uint8_t     input_nir_led_on_tile;
+N    uint8_t     nir_led_flag;
+N    uint8_t     input_distance;
+N    uint32_t    rgb_cur_exp_time;
+N    uint32_t    rgb_init_exp_time;
+N    uint8_t     pre_gain;
+N    uint8_t     post_gain;
+N    uint8_t     global_gain;
+N    uint8_t     y_average;
+N    float       rgb_lm_score;
+N    float       nir_lv_cnn_face_real_score;
+N    float       fuse_lv_cnn_real_score;
+N};
+N
+N/* Raw image structure */
+Nstruct kdp_img_raw_s {
+N    /* Image state: 1 = active, 0 = inactive */
+N    int         state;
+N
+N    /* Image sequence number */
+N    int         seq_num;
+N
+N    /* Image ref index */
+N    int         ref_idx;
+N
+N    /* raw image dimensions */
+N    uint32_t    input_row;
+N    uint32_t    input_col;
+N    uint32_t    input_channel;
+N
+N    /* Raw image format and pre-process flags
+N     * bit-31: = 1 : subtract 128
+N     * bit 30:29 00: no rotation; 01: rotate clockwise; 10: rotate counter clockwise; 11: reserved
+N     * bit 7:0: format
+N     */
+N    uint32_t    format;
+N
+N    /* Parameter structure */
+N    struct parameter_s  params_s;
+N
+N    /* input image in memory */
+N    uint32_t    image_mem_addr;
+N    int32_t     image_mem_len;
+N
+N    struct result_buf_s results[MULTI_MODEL_MAX];
+X    struct result_buf_s results[16];
+N
+N    /* Test: SCPU total */
+N    uint32_t    tick_start;
+N    uint32_t    tick_end;
+N
+N    /* Test: NCPU processes */
+N    uint32_t    tick_start_pre;
+N    uint32_t    tick_end_pre;
+N    uint32_t    tick_start_npu;
+N    uint32_t    tick_end_npu;
+N    uint32_t    tick_start_post;
+N    uint32_t    tick_end_post;
+N};
+N
+N/* Image result structure */
+Nstruct kdp_img_result_s {
+N    /* Processing status: 2 = done, 1 = running, 0 = unused */
+N    int         status;
+N
+N    /* Image sequence number */
+N    int         seq_num;
+N	
+N    /* result memory addr */
+N    //dummy information
+N    uint32_t    result_mem_addr;
+N};
+N
+N/* Structure of sCPU->nCPU Message */
+Nstruct scpu_to_ncpu_s {
+N    uint32_t    id;        /* = 'scpu' */
+N    uint32_t    version;
+N    uint32_t    cmd;            // Run / Stop
+N    uint32_t    input_count;    // # of input image
+N
+N    /*
+N     * debug control flags (dbg.h):
+N     *   bits 19-16: scpu debug level
+N     *   bits 03-00: ncpu debug level
+N     */
+N    uint32_t    debug_flags;
+N
+N    /* Active images (& model) being processed by npu/ncpu */
+N    uint32_t            cmd_flags[IPC_IMAGE_ACTIVE_MAX]; // discussion, IPC_COM_PAX
+X    uint32_t            cmd_flags[2]; 
+N    int32_t             active_img_index[IPC_IMAGE_ACTIVE_MAX]; // discussion, raw_imgs_idx[IPC_COM_PAX]
+X    int32_t             active_img_index[2]; 
+N    int32_t             model_slot_index[IPC_IMAGE_ACTIVE_MAX]; // discussion, models_slot_idx[IPC_COM_PAX]
+X    int32_t             model_slot_index[2]; 
+N
+N    int32_t             active_img_index_rgb_liveness;
+N
+N    /* Models in memory */
+N    int32_t             num_models;  //usually, num_models=1 (only one active model)
+N    struct kdp_model_s  models[MULTI_MODEL_MAX];            //to save active modelInfo
+X    struct kdp_model_s  models[16];            
+N    uint32_t            models_type[MULTI_MODEL_MAX];       //to save model type
+X    uint32_t            models_type[16];       
+N
+N    /* Raw image information */
+N    struct kdp_img_raw_s raw_images[IPC_IMAGE_MAX];
+X    struct kdp_img_raw_s raw_images[5];
+N
+N    /* Input/Output working buffers for NPU */
+N    uint32_t    input_mem_addr2;
+N    int32_t     input_mem_len2;
+N
+N    /* Memory for parallel processing */
+N    uint32_t    output_mem_addr2;
+N    int32_t     output_mem_len2;
+N
+N    /* Memory for pre processing command */
+N    uint32_t    inproc_mem_addr;
+N    
+N    /* Memory for post processing parameters */
+N    uint32_t    output_mem_addr3;
+N};
+N
+N/* Structure of nCPU->sCPU Message */
+Nstruct ncpu_to_scpu_s {
+N    uint32_t    id;        /* = 'ncpu' */
+N    uint32_t    version;
+N    int32_t     status;
+N
+N    /* Active pipeline */
+N    int32_t     cmd_status[IPC_IMAGE_ACTIVE_MAX];
+X    int32_t     cmd_status[2];
+N    int32_t     img_index_done[IPC_IMAGE_ACTIVE_MAX]; // for debug only
+X    int32_t     img_index_done[2]; 
+N
+N    /* Images result info corresponding to raw_images[] */
+N    struct kdp_img_result_s img_results[IPC_IMAGE_MAX];
+X    struct kdp_img_result_s img_results[5];
+N};
+N
+N/* scpu_to_ncpu: cmd */
+Nenum {
+N    CMD_NO,
+N    CMD_STOP_NPU,
+N    CMD_RUN_NPU,
+N    CMD_RUN_NPU_1,
+N    CMD_RUN_NCPU,
+N    CMD_RUN_NCPU_1,
+N};
+N
+N/* ncpu_to_scpu: status */
+Nenum {
+N    STATUS_ERR = -1,
+N    STATUS_INIT = 0,
+N    STATUS_OK,
+N    STATUS_OK_1,
+N    STATUS_DDR_FAULT = -101,
+N};
+N
+Nstruct nir_camera_tune_s{
+N    uint8_t     init_tile;
+N    uint8_t     nir_mode;
+N    float       init_nir_gain;
+N    float       nir_gain;
+N    uint32_t    nir_cur_exp_time;
+N    uint32_t    calibration_count;
+N    float       registered_offsetX;
+N    float       registered_offsetY;
+N    uint8_t     rgb_led_flag;
+N    uint8_t     rgb_avg_luma;
+N    float       x_scaling;
+N    uint8_t     d_offset;
+N    uint8_t     pass_type;
+N    _Bool       ignore_rgb_led;
+N    _Bool       bctc;
+N    uint8_t     input_nir_led_on_tile;
+N    uint8_t     nir_led_flag;
+N    uint8_t     input_distance;
+N    uint32_t    rgb_cur_exp_time;
+N    uint32_t    rgb_init_exp_time; 
+N    uint8_t     pre_gain;
+N    uint8_t     post_gain;
+N    uint8_t     global_gain;
+N    uint8_t     y_average;
+N    float       rgb_lm_score;
+N    float       nir_lv_cnn_face_real_score;
+N    float       fuse_lv_cnn_real_score;
+N    
+N};
+N
+Nstruct lv_params_s {
+N    uint32_t dual_landmarks[DUAL_LAND_MARK_POINTS * 2];
+X    uint32_t dual_landmarks[10 * 2];
+N    uint32_t dual_landmarks_3d[DUAL_LAND_MARK_POINTS * 2];
+X    uint32_t dual_landmarks_3d[10 * 2];
+N    struct nir_camera_tune_s nir_tune;
+N};
+N
+N#endif
+L 12 "..\..\..\..\common\include\dbg.h" 2
+N
+N//#define DEV_TEST_VERSION
+N//#define DEV_PKT_LOG_DETAIL
+N
+N#define LOG_NONE        0
+N#define LOG_USER        1
+N#define LOG_CRITICAL    1
+N#define LOG_ERROR       2
+N
+N#define LOG_INFO        4
+N#define LOG_TRACE       5
+N#define LOG_DBG         6
+N#define LOG_PROFILE     9
+N
+N#define DEBUG_CONSOLE                  DRVUART_PORT0
+N
+N#ifdef DEV_TEST_VERSION
+S#undef CUSTOMER_SETTING_REMOVE_LOG
+N#else
+N#define CUSTOMER_SETTING_REMOVE_LOG
+N#endif
+N
+N#ifdef  LOG_ENABLE
+N
+N#ifdef TARGET_NCPU
+S
+Sextern void fLib_printf(const char *f, ...);
+S
+Sextern struct scpu_to_ncpu_s *in_comm_p;
+Sextern int ncpu_debug_level;
+S#define log_get_level_ncpu()    (in_comm_p->debug_flags & 0x0000000F)
+S    
+S#ifdef CUSTOMER_SETTING_REMOVE_LOG
+S    #define dbg_msg(fmt, ...) 
+S    #define trace_msg(fmt, ...) 
+S    #define info_msg(fmt, ...) 
+S    #define err_msg(fmt, ...) fLib_printf(fmt, ##__VA_ARGS__)
+S    #define critical_msg(fmt, ...) 
+S    #define profile_msg(fmt, ...) 
+S    #define dbg_msg_algo(fmt, ...) //MSG(LOG_CRITICAL, fmt, ##__VA_ARGS__) 
+S    #define dbg_msg_algo2(fmt, ...) //MSG(LOG_CRITICAL, fmt, ##__VA_ARGS__) 
+S#else
+S    #define dbg_msg(fmt, ...) //MSG(LOG_DBG, fmt, ##__VA_ARGS__)
+S    #define trace_msg(fmt, ...) //MSG(LOG_TRACE, fmt, ##__VA_ARGS__)
+S    #define info_msg(fmt, ...) //MSG(LOG_INFO, fmt, ##__VA_ARGS__)
+S    #define err_msg(fmt, ...) fLib_printf(fmt, ##__VA_ARGS__)
+S    #define critical_msg(fmt, ...) fLib_printf(fmt, ##__VA_ARGS__)
+S    #define profile_msg(fmt, ...) fLib_printf(fmt, ##__VA_ARGS__)
+S    #define dbg_msg_algo(fmt, ...) fLib_printf(fmt, ##__VA_ARGS__)
+S    #define dbg_msg_algo2(fmt, ...) //MSG(LOG_CRITICAL, fmt, ##__VA_ARGS__) 
+S#endif   
+S    
+S    
+N#else // TARGET_SCPU
+N
+Nextern struct scpu_to_ncpu_s *s_out_comm;
+Nextern int scpu_debug_level;
+N
+N#define MSG(level, format, ...) \
+N    do {                                                   \
+N        if (level <= scpu_debug_level)                     \
+N            kdp_printf(format, ##__VA_ARGS__);            \
+N    } while (0)
+X#define MSG(level, format, ...)     do {                                                           if (level <= scpu_debug_level)                                 kdp_printf(format, ##__VA_ARGS__);                } while (0)
+N
+N
+Nvoid kdp_printf(const char *f, ...);
+Nvoid kdp_level_printf(int level, const char *fmt, ...);
+Nvoid kdp_user_level_printf(int level, const char *fmt, ...);
+Nvoid kdp_printf_nocrlf(const char *f, ...);
+N    
+N#define dbg_msg(fmt, ...) //MSG(LOG_DBG, fmt, ##__VA_ARGS__)
+N#define trace_msg(fmt, ...) MSG(LOG_TRACE, fmt, ##__VA_ARGS__)
+N#define info_msg(fmt, ...) //MSG(LOG_INFO, fmt, ##__VA_ARGS__)
+N#define err_msg(fmt, ...) kdp_level_printf(LOG_ERROR, fmt, ##__VA_ARGS__)
+N#define critical_msg(fmt, ...) MSG(LOG_CRITICAL, fmt, ##__VA_ARGS__)
+N#define profile_msg(fmt, ...) MSG(LOG_PROFILE, fmt, ##__VA_ARGS__)
+N
+N
+N#ifdef CUSTOMER_SETTING_REMOVE_LOG
+N    #define dbg_msg_console(__format__, ...) kdp_level_printf(LOG_USER, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_err(__format__, ...) kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_flash(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_camera(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_display(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_touch(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_com(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_gui(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_app(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_e2e(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_api(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_usb(__format__, ...) //{ kdp_printf(__format__"\r\n", ##__VA_ARGS__); }
+N    #define dbg_msg_algo(__format__, ...) //kdp_level_printf(LOG_CRITICAL, __format__"\r\n", ##__VA_ARGS__)
+N    #define dlog(__format__, ...) //kdp_level_printf(LOG_DBG, "[%s][%s] " __format__ "\r\n", DEF_LOG_CATEG, __func__, ##__VA_ARGS__)
+N    #define dbg_msg_model(__format__, ...) kdp_level_printf(LOG_USER, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_ncpu(__format__, ...) //kdp_level_printf(LOG_USER, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_engineering(__format__, ...) //kdp_user_level_printf(LOG_USER, __format__"\r\n", ##__VA_ARGS__)
+N    #define dbg_msg_tile(__format__, ...) //kdp_level_printf(LOG_USER, __format__, ##__VA_ARGS__)
+N#else
+S    #define dbg_msg_console(__format__, ...) kdp_printf(__format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_err(__format__, ...) kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_flash(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_camera(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_display(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_touch(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_com(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_gui(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_app(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_e2e(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_api(__format__, ...) //kdp_level_printf(LOG_ERROR, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_usb(__format__, ...) { kdp_printf(__format__"\r\n", ##__VA_ARGS__); }
+S    #define dbg_msg_algo(__format__, ...) kdp_level_printf(LOG_CRITICAL, __format__"\r\n", ##__VA_ARGS__)
+S    #define dlog(__format__, ...) kdp_level_printf(LOG_DBG, "[%s][%s] " __format__ "\r\n", DEF_LOG_CATEG, __func__, ##__VA_ARGS__)
+S    #define dbg_msg_model(__format__, ...) kdp_level_printf(LOG_USER, __format__"\r\n", ##__VA_ARGS__)    
+S    #define dbg_msg_ncpu(__format__, ...) //kdp_level_printf(LOG_USER, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_engineering(__format__, ...) //kdp_user_level_printf(LOG_USER, __format__"\r\n", ##__VA_ARGS__)
+S    #define dbg_msg_tile(__format__, ...) kdp_level_printf(LOG_USER, __format__, ##__VA_ARGS__)
+N#endif 
+N
+N#define dbg_msg_user(__format__, ...) kdp_user_level_printf(LOG_USER, __format__"\r\n", ##__VA_ARGS__)
+N#define dbg_msg_nocrlf(__format__, ...) { kdp_printf_nocrlf(__format__, ##__VA_ARGS__); }
+N#define dbg_msg_console_zhian(__format__, ...) kdp_level_printf(LOG_USER, __format__"\r\n", ##__VA_ARGS__)
+N
+N
+N#endif
+N
+N#else
+S
+N#endif // LOG_ENABLE
+N
+Nuint32_t log_get_level_scpu(void);
+Nuint32_t log_get_user_level_scpu(void);
+Nvoid log_set_level_scpu(uint32_t level);
+Nvoid log_set_level_ncpu(uint32_t level);
+Nvoid log_set_user_level_scpu(uint32_t level);
+Nvoid log_set_user_level_ncpu(uint32_t level);
+N
+N#define kmdw_console_set_log_level_scpu log_set_level_scpu
+N#define kmdw_console_set_log_level_ncpu log_set_level_ncpu
+N
+N#define ASSERT(x)   do { \
+N                        if (!(x)) 	\
+N                            for (;;)	\
+N                                ; 		\
+N                    } while (0)
+X#define ASSERT(x)   do {                         if (!(x)) 	                            for (;;)	                                ; 		                    } while (0)
+N
+N#endif // __DBG_H__
+L 12 "..\..\..\..\scpu\drivers\system\kdp_crc.c" 2
+N
+Nu16 kdp_gen_crc16(u8 *data, u32 size)
+N{
+N    u16 out = 0;
+N    int bits_read = 0, bit_flag, i;
+N
+N    /* Sanity check: */
+N    if (data == NULL)
+X    if (data == 0)
+N        return 0;
+N
+N    while (size > 0)
+N    {
+N        bit_flag = out >> 15;
+N
+N        /* Get next bit: */
+N        out <<= 1;
+N        out |= (*data >> bits_read) & 1;
+N        bits_read++;
+N        if (bits_read > 7)
+N        {
+N            bits_read = 0;
+N            data++;
+N            size--;
+N        }
+N
+N        /* Cycle check: */
+N        if (bit_flag)
+N            out ^= CRC16_CONSTANT;
+X            out ^= 0x8005;
+N
+N    }
+N
+N    // push out the last 16 bits
+N    for (i = 0; i < 16; ++i) {
+N        bit_flag = out >> 15;
+N        out <<= 1;
+N        if (bit_flag)
+N            out ^= CRC16_CONSTANT;
+X            out ^= 0x8005;
+N    }
+N
+N    // reverse the bits
+N    u16 crc = 0;
+N    i = 0x8000;
+N    int j = 0x0001;
+N    for (; i != 0; i >>= 1, j <<= 1) {
+N        if (i & out) crc |= j;
+N    }
+N
+N    return crc;
+N}
+N
+N#define SHA1CircularShift(bits,word) \
+N                (((word) << (bits)) | ((word) >> (32-(bits))))
+X#define SHA1CircularShift(bits,word)                 (((word) << (bits)) | ((word) >> (32-(bits))))
+N
+N/* Local Function Prototyptes */
+Nvoid SHA1PadMessage(SHA1Context *);
+Nvoid SHA1ProcessMessageBlock(SHA1Context *);
+N
+Nint SHA1Reset(SHA1Context *context)
+N{
+N    if (!context)
+N    {
+N        return shaNull;
+N    }
+N
+N    context->Length_Low             = 0;
+N    context->Length_High            = 0;
+N    context->Message_Block_Index    = 0;
+N
+N    context->Intermediate_Hash[0]   = 0x67452301;
+N    context->Intermediate_Hash[1]   = 0xEFCDAB89;
+N    context->Intermediate_Hash[2]   = 0x98BADCFE;
+N    context->Intermediate_Hash[3]   = 0x10325476;
+N    context->Intermediate_Hash[4]   = 0xC3D2E1F0;
+N
+N    context->Computed   = 0;
+N    context->Corrupted  = 0;
+N
+N    return shaSuccess;
+N}
+N
+N/*
+N *  SHA1Result
+N *
+N *  Description:
+N *      This function will return the 160-bit message digest into the
+N *      Message_Digest array  provided by the caller.
+N *      NOTE: The first octet of hash is stored in the 0th element,
+N *            the last octet of hash in the 19th element.
+N *
+N *  Parameters:
+N *      context: [in/out]
+N *          The context to use to calculate the SHA-1 hash.
+N *      Message_Digest: [out]
+N *          Where the digest is returned.
+N *
+N *  Returns:
+N *      sha Error Code.
+N *
+N */
+Nint SHA1Result( SHA1Context *context,
+N                uint8_t Message_Digest[SHA1HashSize])
+X                uint8_t Message_Digest[20])
+N{
+N    int i;
+N
+N    if (!context || !Message_Digest)
+N    {
+N        return shaNull;
+N    }
+N
+N    if (context->Corrupted)
+N    {
+N        return context->Corrupted;
+N    }
+N
+N    if (!context->Computed)
+N    {
+N        SHA1PadMessage(context);
+N        for(i=0; i<64; ++i)
+N        {
+N            /* message may be sensitive, clear it out */
+N            context->Message_Block[i] = 0;
+N        }
+N        context->Length_Low = 0;    /* and clear length */
+N        context->Length_High = 0;
+N        context->Computed = 1;
+N
+N    }
+N
+N    for(i = 0; i < SHA1HashSize; ++i)
+X    for(i = 0; i < 20; ++i)
+N    {
+N        Message_Digest[i] = context->Intermediate_Hash[i>>2]
+N                            >> 8 * ( 3 - ( i & 0x03 ) );
+N    }
+N
+N    return shaSuccess;
+N}
+N
+N/*
+N *  SHA1Input
+N *
+N *  Description:
+N *      This function accepts an array of octets as the next portion
+N *      of the message.
+N *
+N *  Parameters:
+N *      context: [in/out]
+N *          The SHA context to update
+N *      message_array: [in]
+N *          An array of characters representing the next portion of
+N *          the message.
+N *      length: [in]
+N *          The length of the message in message_array
+N *
+N *  Returns:
+N *      sha Error Code.
+N *
+N */
+Nint SHA1Input(    SHA1Context    *context,
+N                  const uint8_t  *message_array,
+N                  unsigned       length)
+N{
+N    if (!length)
+N    {
+N        return shaSuccess;
+N    }
+N
+N    if (!context || !message_array)
+N    {
+N        return shaNull;
+N    }
+N
+N    if (context->Computed)
+N    {
+N        context->Corrupted = shaStateError;
+N
+N        return shaStateError;
+N    }
+N
+N    if (context->Corrupted)
+N    {
+N         return context->Corrupted;
+N    }
+N    while(length-- && !context->Corrupted)
+N    {
+N    context->Message_Block[context->Message_Block_Index++] =
+N                    (*message_array & 0xFF);
+N
+N    context->Length_Low += 8;
+N    if (context->Length_Low == 0)
+N    {
+N        context->Length_High++;
+N        if (context->Length_High == 0)
+N        {
+N            /* Message is too long */
+N            context->Corrupted = 1;
+N        }
+N    }
+N
+N    if (context->Message_Block_Index == 64)
+N    {
+N        SHA1ProcessMessageBlock(context);
+N    }
+N
+N    message_array++;
+N    }
+N
+N    return shaSuccess;
+N}
+N
+N/*
+N *  SHA1ProcessMessageBlock
+N *
+N *  Description:
+N *      This function will process the next 512 bits of the message
+N *      stored in the Message_Block array.
+N *
+N *  Parameters:
+N *      None.
+N *
+N *  Returns:
+N *      Nothing.
+N *
+N *  Comments:
+N
+N *      Many of the variable names in this code, especially the
+N *      single character names, were used because those were the
+N *      names used in the publication.
+N *
+N *
+N */
+Nvoid SHA1ProcessMessageBlock(SHA1Context *context)
+N{
+N    const uint32_t K[] =    {       /* Constants defined in SHA-1   */
+N                            0x5A827999,
+N                            0x6ED9EBA1,
+N                            0x8F1BBCDC,
+N                            0xCA62C1D6
+N                            };
+N    int           t;                 /* Loop counter                */
+N    uint32_t      temp;              /* Temporary word value        */
+N    uint32_t      W[80];             /* Word sequence               */
+N    uint32_t      A, B, C, D, E;     /* Word buffers                */
+N
+N    /*
+N     *  Initialize the first 16 words in the array W
+N     */
+N    for(t = 0; t < 16; t++)
+N    {
+N        W[t] = context->Message_Block[t * 4] << 24;
+N        W[t] |= context->Message_Block[t * 4 + 1] << 16;
+N        W[t] |= context->Message_Block[t * 4 + 2] << 8;
+N        W[t] |= context->Message_Block[t * 4 + 3];
+N    }
+N
+N    for(t = 16; t < 80; t++)
+N    {
+N       W[t] = SHA1CircularShift(1,W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16]);
+X       W[t] = (((W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16]) << (1)) | ((W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16]) >> (32-(1))));
+N    }
+N
+N    A = context->Intermediate_Hash[0];
+N    B = context->Intermediate_Hash[1];
+N    C = context->Intermediate_Hash[2];
+N    D = context->Intermediate_Hash[3];
+N    E = context->Intermediate_Hash[4];
+N
+N    for(t = 0; t < 20; t++)
+N    {
+N        temp =  SHA1CircularShift(5,A) +
+X        temp =  (((A) << (5)) | ((A) >> (32-(5)))) +
+N                ((B & C) | ((~B) & D)) + E + W[t] + K[0];
+N        E = D;
+N        D = C;
+N        C = SHA1CircularShift(30,B);
+X        C = (((B) << (30)) | ((B) >> (32-(30))));
+N
+N        B = A;
+N        A = temp;
+N    }
+N
+N    for(t = 20; t < 40; t++)
+N    {
+N        temp = SHA1CircularShift(5,A) + (B ^ C ^ D) + E + W[t] + K[1];
+X        temp = (((A) << (5)) | ((A) >> (32-(5)))) + (B ^ C ^ D) + E + W[t] + K[1];
+N        E = D;
+N        D = C;
+N        C = SHA1CircularShift(30,B);
+X        C = (((B) << (30)) | ((B) >> (32-(30))));
+N        B = A;
+N        A = temp;
+N    }
+N
+N    for(t = 40; t < 60; t++)
+N    {
+N        temp = SHA1CircularShift(5,A) +
+X        temp = (((A) << (5)) | ((A) >> (32-(5)))) +
+N               ((B & C) | (B & D) | (C & D)) + E + W[t] + K[2];
+N        E = D;
+N        D = C;
+N        C = SHA1CircularShift(30,B);
+X        C = (((B) << (30)) | ((B) >> (32-(30))));
+N        B = A;
+N        A = temp;
+N    }
+N
+N    for(t = 60; t < 80; t++)
+N    {
+N        temp = SHA1CircularShift(5,A) + (B ^ C ^ D) + E + W[t] + K[3];
+X        temp = (((A) << (5)) | ((A) >> (32-(5)))) + (B ^ C ^ D) + E + W[t] + K[3];
+N        E = D;
+N        D = C;
+N        C = SHA1CircularShift(30,B);
+X        C = (((B) << (30)) | ((B) >> (32-(30))));
+N        B = A;
+N        A = temp;
+N    }
+N
+N    context->Intermediate_Hash[0] += A;
+N    context->Intermediate_Hash[1] += B;
+N    context->Intermediate_Hash[2] += C;
+N    context->Intermediate_Hash[3] += D;
+N    context->Intermediate_Hash[4] += E;
+N
+N    context->Message_Block_Index = 0;
+N}
+N
+N/*
+N *  SHA1PadMessage
+N *
+N
+N *  Description:
+N *      According to the standard, the message must be padded to an even
+N *      512 bits.  The first padding bit must be a '1'.  The last 64
+N *      bits represent the length of the original message.  All bits in
+N *      between should be 0.  This function will pad the message
+N *      according to those rules by filling the Message_Block array
+N *      accordingly.  It will also call the ProcessMessageBlock function
+N *      provided appropriately.  When it returns, it can be assumed that
+N *      the message digest has been computed.
+N *
+N *  Parameters:
+N *      context: [in/out]
+N *          The context to pad
+N *      ProcessMessageBlock: [in]
+N *          The appropriate SHA*ProcessMessageBlock function
+N *  Returns:
+N *      Nothing.
+N *
+N */
+N
+Nvoid SHA1PadMessage(SHA1Context *context)
+N{
+N    /*
+N     *  Check to see if the current message block is too small to hold
+N     *  the initial padding bits and length.  If so, we will pad the
+N     *  block, process it, and then continue padding into a second
+N     *  block.
+N     */
+N    if (context->Message_Block_Index > 55)
+N    {
+N        context->Message_Block[context->Message_Block_Index++] = 0x80;
+N        while(context->Message_Block_Index < 64)
+N        {
+N            context->Message_Block[context->Message_Block_Index++] = 0;
+N        }
+N
+N        SHA1ProcessMessageBlock(context);
+N
+N        while(context->Message_Block_Index < 56)
+N        {
+N            context->Message_Block[context->Message_Block_Index++] = 0;
+N        }
+N    }
+N    else
+N    {
+N        context->Message_Block[context->Message_Block_Index++] = 0x80;
+N        while(context->Message_Block_Index < 56)
+N        {
+N
+N            context->Message_Block[context->Message_Block_Index++] = 0;
+N        }
+N    }
+N
+N    /*
+N     *  Store the message length as the last 8 octets
+N     */
+N    context->Message_Block[56] = context->Length_High >> 24;
+N    context->Message_Block[57] = context->Length_High >> 16;
+N    context->Message_Block[58] = context->Length_High >> 8;
+N    context->Message_Block[59] = context->Length_High;
+N    context->Message_Block[60] = context->Length_Low >> 24;
+N    context->Message_Block[61] = context->Length_Low >> 16;
+N    context->Message_Block[62] = context->Length_Low >> 8;
+N    context->Message_Block[63] = context->Length_Low;
+N
+N    SHA1ProcessMessageBlock(context);
+N}
+N
+Nstruct SHA1Context sha_core;
+N
+Nu32 kdp_gen_sha32(u8 *data, u32 size)
+N{
+N    u32 *sram, *ddr, i, j;
+N    ddr = (u32*)data;
+N    sram = (u32*)(sha_core.Message_Block);
+N    SHA1Reset(&sha_core);
+N    for (i = 0; i < size; i += 64)
+N    {
+N#if 0
+S        memcpy(sram, ddr, 64);
+S        ddr += 16;
+N#else
+N        for (j = 0; j < 16; j++)  // copy one block over
+N            sram[j] = *ddr++;
+N#endif
+N        SHA1ProcessMessageBlock(&sha_core);
+N    }
+N    if (size & 0x03F)  // pad partial block with zero's
+N    {
+N        i -= 64; // point to the start of partial block
+N        memset(sha_core.Message_Block, 0, 64);
+N        memcpy(sha_core.Message_Block, &data[i], size & 0x03F);
+N        SHA1ProcessMessageBlock(&sha_core);
+N    }
+N    j = 0;
+N    for (i = 0; i < 5; i++)
+N        j ^= sha_core.Intermediate_Hash[i];
+N    return(j);
+N}
+N
+N/* Calculate the 32-bit checksum of object using 32-bit size block
+N** If address is not 32-bit aligned, use the fraction of the block w/ zero's
+N** replacing excluded bytes.  (Note: we use Little Endian)
+N*/
+Nu32 kdp_gen_sum32(u8 *data, u32 size)
+N{
+N    u32 sum, *ddr, i = (u32)data & 0x03;
+N    ddr = (u32*) ((u32)data & 0xFFFFFFFC);  // point to the first 32-bit aligned block
+N    if (i) { // starting address misaligned ?
+N		size = size + i - 4;
+N        sum = *ddr;
+N        sum >>= i*8;
+N		sum <<= i*8;
+N        ddr++;
+N    }
+N    else
+N        sum = 0;
+N    for (i = 0; i < (size & 0xFFFFFFFC); i += 4) {
+N        sum += *ddr;
+N        ddr++;
+N    }
+N    i = size & 3;
+N    if (i)  // ending address misaligned ?
+N    {
+N        size = *ddr;
+N        size <<= (4-i)*8;
+N        size >>= (4-i)*8;
+N        sum += size;
+N    }
+N    return(sum);
+N}

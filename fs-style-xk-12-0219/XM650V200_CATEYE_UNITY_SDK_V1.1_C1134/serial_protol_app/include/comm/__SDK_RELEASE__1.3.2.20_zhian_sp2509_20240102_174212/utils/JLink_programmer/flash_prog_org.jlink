@@ -1,0 +1,8 @@
+si 1
+speed 30000
+device KL520-GD64M
+r
+h
+loadbin .\bin\flash_fdfr_image.bin,0x00000000
+r
+g

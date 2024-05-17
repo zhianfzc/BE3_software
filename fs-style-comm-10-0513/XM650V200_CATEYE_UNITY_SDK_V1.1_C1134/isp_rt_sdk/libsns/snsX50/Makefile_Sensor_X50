@@ -1,0 +1,16 @@
+SRC := snsX50
+
+
+ifeq ($(CONFIG_X50_SC500AI),y)   
+CFLAGS_SENSOR += -DSENS_X50_SC500AI
+LIB_OBJS += $(SRC)/sc500ai_cmos.o    \
+            $(SRC)/sc500ai_sensor_ctl.o 
+endif
+ifeq ($(CONFIG_X50_IMX335),y)   
+CFLAGS_SENSOR += -DSENS_X50_IMX335
+LIB_OBJS += $(SRC)/imx335_cmos.o    \
+            $(SRC)/imx335_sensor_ctl.o 
+endif
+
+
+

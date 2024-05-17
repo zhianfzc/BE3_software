@@ -1,0 +1,19 @@
+SRC := snsX1x
+
+ifeq ($(CONFIG_X1X_SC035GS),y)	
+CFLAGS_SENSOR += -DSENS_X1X_SC035GS
+LIB_OBJS += $(SRC)/sc035gs_cmos.o	\
+			$(SRC)/sc035gs_sensor_ctl.o 
+endif
+
+ifeq ($(CONFIG_X1X_SC1330T),y)	
+CFLAGS_SENSOR += -DSENS_X1X_SC1330T
+LIB_OBJS += $(SRC)/sc1330T_cmos.o	\
+			$(SRC)/sc1330T_sensor_ctl.o 
+endif
+
+ifeq ($(CONFIG_X1X_SC1346),y)	
+CFLAGS_SENSOR += -DSENS_X1X_SC1346
+LIB_OBJS += $(SRC)/sc1346_cmos.o	\
+			$(SRC)/sc1346_sensor_ctl.o 
+endif

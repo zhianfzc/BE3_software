@@ -1,0 +1,718 @@
+L 1 "..\..\..\..\scpu\drivers\src\kdp520_flash.c"
+N#include "types.h"
+L 1 "..\..\..\..\common\include\types.h" 1
+N#ifndef TYPES_H
+N#define TYPES_H
+N
+N#include <stdint.h>
+L 1 "F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h" 1
+N/* Copyright (C) ARM Ltd., 1999,2014 */
+N/* All rights reserved */
+N
+N/*
+N * RCS $Revision$
+N * Checkin $Date$
+N * Revising $Author: agrant $
+N */
+N
+N#ifndef __stdint_h
+N#define __stdint_h
+N#define __ARMCLIB_VERSION 5060037
+N
+N  #ifdef __INT64_TYPE__
+S    /* armclang predefines '__INT64_TYPE__' and '__INT64_C_SUFFIX__' */
+S    #define __INT64 __INT64_TYPE__
+N  #else
+N    /* armcc has builtin '__int64' which can be used in --strict mode */
+N    #define __INT64 __int64
+N    #define __INT64_C_SUFFIX__ ll
+N  #endif
+N  #define __PASTE2(x, y) x ## y
+N  #define __PASTE(x, y) __PASTE2(x, y)
+N  #define __INT64_C(x)  __ESCAPE__(__PASTE(x, __INT64_C_SUFFIX__))
+N  #define __UINT64_C(x)  __ESCAPE__(__PASTE(x ## u, __INT64_C_SUFFIX__))
+N  #if defined(__clang__) || (defined(__ARMCC_VERSION) && !defined(__STRICT_ANSI__))
+X  #if 0L || (1L && !0L)
+N    /* armclang and non-strict armcc allow 'long long' in system headers */
+N    #define __LONGLONG long long
+N  #else
+S    /* strict armcc has '__int64' */
+S    #define __LONGLONG __int64
+N  #endif
+N
+N  #ifndef __STDINT_DECLS
+N  #define __STDINT_DECLS
+N
+N    #undef __CLIBNS
+N
+N    #ifdef __cplusplus
+S      namespace std {
+S          #define __CLIBNS std::
+S          extern "C" {
+N    #else
+N      #define __CLIBNS
+N    #endif  /* __cplusplus */
+N
+N
+N/*
+N * 'signed' is redundant below, except for 'signed char' and if
+N * the typedef is used to declare a bitfield.
+N */
+N
+N    /* 7.18.1.1 */
+N
+N    /* exact-width signed integer types */
+Ntypedef   signed          char int8_t;
+Ntypedef   signed short     int int16_t;
+Ntypedef   signed           int int32_t;
+Ntypedef   signed       __INT64 int64_t;
+Xtypedef   signed       __int64 int64_t;
+N
+N    /* exact-width unsigned integer types */
+Ntypedef unsigned          char uint8_t;
+Ntypedef unsigned short     int uint16_t;
+Ntypedef unsigned           int uint32_t;
+Ntypedef unsigned       __INT64 uint64_t;
+Xtypedef unsigned       __int64 uint64_t;
+N
+N    /* 7.18.1.2 */
+N
+N    /* smallest type of at least n bits */
+N    /* minimum-width signed integer types */
+Ntypedef   signed          char int_least8_t;
+Ntypedef   signed short     int int_least16_t;
+Ntypedef   signed           int int_least32_t;
+Ntypedef   signed       __INT64 int_least64_t;
+Xtypedef   signed       __int64 int_least64_t;
+N
+N    /* minimum-width unsigned integer types */
+Ntypedef unsigned          char uint_least8_t;
+Ntypedef unsigned short     int uint_least16_t;
+Ntypedef unsigned           int uint_least32_t;
+Ntypedef unsigned       __INT64 uint_least64_t;
+Xtypedef unsigned       __int64 uint_least64_t;
+N
+N    /* 7.18.1.3 */
+N
+N    /* fastest minimum-width signed integer types */
+Ntypedef   signed           int int_fast8_t;
+Ntypedef   signed           int int_fast16_t;
+Ntypedef   signed           int int_fast32_t;
+Ntypedef   signed       __INT64 int_fast64_t;
+Xtypedef   signed       __int64 int_fast64_t;
+N
+N    /* fastest minimum-width unsigned integer types */
+Ntypedef unsigned           int uint_fast8_t;
+Ntypedef unsigned           int uint_fast16_t;
+Ntypedef unsigned           int uint_fast32_t;
+Ntypedef unsigned       __INT64 uint_fast64_t;
+Xtypedef unsigned       __int64 uint_fast64_t;
+N
+N    /* 7.18.1.4 integer types capable of holding object pointers */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+Stypedef   signed       __INT64 intptr_t;
+Stypedef unsigned       __INT64 uintptr_t;
+N#else
+Ntypedef   signed           int intptr_t;
+Ntypedef unsigned           int uintptr_t;
+N#endif
+N
+N    /* 7.18.1.5 greatest-width integer types */
+Ntypedef   signed     __LONGLONG intmax_t;
+Xtypedef   signed     long long intmax_t;
+Ntypedef unsigned     __LONGLONG uintmax_t;
+Xtypedef unsigned     long long uintmax_t;
+N
+N
+N#if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS)
+X#if !0L || 0L
+N
+N    /* 7.18.2.1 */
+N
+N    /* minimum values of exact-width signed integer types */
+N#define INT8_MIN                   -128
+N#define INT16_MIN                -32768
+N#define INT32_MIN          (~0x7fffffff)   /* -2147483648 is unsigned */
+N#define INT64_MIN  __INT64_C(~0x7fffffffffffffff) /* -9223372036854775808 is unsigned */
+N
+N    /* maximum values of exact-width signed integer types */
+N#define INT8_MAX                    127
+N#define INT16_MAX                 32767
+N#define INT32_MAX            2147483647
+N#define INT64_MAX  __INT64_C(9223372036854775807)
+N
+N    /* maximum values of exact-width unsigned integer types */
+N#define UINT8_MAX                   255
+N#define UINT16_MAX                65535
+N#define UINT32_MAX           4294967295u
+N#define UINT64_MAX __UINT64_C(18446744073709551615)
+N
+N    /* 7.18.2.2 */
+N
+N    /* minimum values of minimum-width signed integer types */
+N#define INT_LEAST8_MIN                   -128
+N#define INT_LEAST16_MIN                -32768
+N#define INT_LEAST32_MIN          (~0x7fffffff)
+N#define INT_LEAST64_MIN  __INT64_C(~0x7fffffffffffffff)
+N
+N    /* maximum values of minimum-width signed integer types */
+N#define INT_LEAST8_MAX                    127
+N#define INT_LEAST16_MAX                 32767
+N#define INT_LEAST32_MAX            2147483647
+N#define INT_LEAST64_MAX  __INT64_C(9223372036854775807)
+N
+N    /* maximum values of minimum-width unsigned integer types */
+N#define UINT_LEAST8_MAX                   255
+N#define UINT_LEAST16_MAX                65535
+N#define UINT_LEAST32_MAX           4294967295u
+N#define UINT_LEAST64_MAX __UINT64_C(18446744073709551615)
+N
+N    /* 7.18.2.3 */
+N
+N    /* minimum values of fastest minimum-width signed integer types */
+N#define INT_FAST8_MIN           (~0x7fffffff)
+N#define INT_FAST16_MIN          (~0x7fffffff)
+N#define INT_FAST32_MIN          (~0x7fffffff)
+N#define INT_FAST64_MIN  __INT64_C(~0x7fffffffffffffff)
+N
+N    /* maximum values of fastest minimum-width signed integer types */
+N#define INT_FAST8_MAX             2147483647
+N#define INT_FAST16_MAX            2147483647
+N#define INT_FAST32_MAX            2147483647
+N#define INT_FAST64_MAX  __INT64_C(9223372036854775807)
+N
+N    /* maximum values of fastest minimum-width unsigned integer types */
+N#define UINT_FAST8_MAX            4294967295u
+N#define UINT_FAST16_MAX           4294967295u
+N#define UINT_FAST32_MAX           4294967295u
+N#define UINT_FAST64_MAX __UINT64_C(18446744073709551615)
+N
+N    /* 7.18.2.4 */
+N
+N    /* minimum value of pointer-holding signed integer type */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+S#define INTPTR_MIN INT64_MIN
+N#else
+N#define INTPTR_MIN INT32_MIN
+N#endif
+N
+N    /* maximum value of pointer-holding signed integer type */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+S#define INTPTR_MAX INT64_MAX
+N#else
+N#define INTPTR_MAX INT32_MAX
+N#endif
+N
+N    /* maximum value of pointer-holding unsigned integer type */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+S#define UINTPTR_MAX UINT64_MAX
+N#else
+N#define UINTPTR_MAX UINT32_MAX
+N#endif
+N
+N    /* 7.18.2.5 */
+N
+N    /* minimum value of greatest-width signed integer type */
+N#define INTMAX_MIN  __ESCAPE__(~0x7fffffffffffffffll)
+N
+N    /* maximum value of greatest-width signed integer type */
+N#define INTMAX_MAX  __ESCAPE__(9223372036854775807ll)
+N
+N    /* maximum value of greatest-width unsigned integer type */
+N#define UINTMAX_MAX __ESCAPE__(18446744073709551615ull)
+N
+N    /* 7.18.3 */
+N
+N    /* limits of ptrdiff_t */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+S#define PTRDIFF_MIN INT64_MIN
+S#define PTRDIFF_MAX INT64_MAX
+N#else
+N#define PTRDIFF_MIN INT32_MIN
+N#define PTRDIFF_MAX INT32_MAX
+N#endif
+N
+N    /* limits of sig_atomic_t */
+N#define SIG_ATOMIC_MIN (~0x7fffffff)
+N#define SIG_ATOMIC_MAX   2147483647
+N
+N    /* limit of size_t */
+N#if __sizeof_ptr == 8
+X#if 4 == 8
+S#define SIZE_MAX UINT64_MAX
+N#else
+N#define SIZE_MAX UINT32_MAX
+N#endif
+N
+N    /* limits of wchar_t */
+N    /* NB we have to undef and redef because they're defined in both
+N     * stdint.h and wchar.h */
+N#undef WCHAR_MIN
+N#undef WCHAR_MAX
+N
+N#if defined(__WCHAR32) || (defined(__ARM_SIZEOF_WCHAR_T) && __ARM_SIZEOF_WCHAR_T == 4)
+X#if 0L || (0L && __ARM_SIZEOF_WCHAR_T == 4)
+S  #define WCHAR_MIN   0
+S  #define WCHAR_MAX   0xffffffffU
+N#else
+N  #define WCHAR_MIN   0
+N  #define WCHAR_MAX   65535
+N#endif
+N
+N    /* limits of wint_t */
+N#define WINT_MIN (~0x7fffffff)
+N#define WINT_MAX 2147483647
+N
+N#endif /* __STDC_LIMIT_MACROS */
+N
+N#if !defined(__cplusplus) || defined(__STDC_CONSTANT_MACROS)
+X#if !0L || 0L
+N
+N    /* 7.18.4.1 macros for minimum-width integer constants */
+N#define INT8_C(x)   (x)
+N#define INT16_C(x)  (x)
+N#define INT32_C(x)  (x)
+N#define INT64_C(x)  __INT64_C(x)
+N
+N#define UINT8_C(x)  (x ## u)
+N#define UINT16_C(x) (x ## u)
+N#define UINT32_C(x) (x ## u)
+N#define UINT64_C(x) __UINT64_C(x)
+N
+N    /* 7.18.4.2 macros for greatest-width integer constants */
+N#define INTMAX_C(x)  __ESCAPE__(x ## ll)
+N#define UINTMAX_C(x) __ESCAPE__(x ## ull)
+N
+N#endif /* __STDC_CONSTANT_MACROS */
+N
+N    #ifdef __cplusplus
+S         }  /* extern "C" */
+S      }  /* namespace std */
+N    #endif /* __cplusplus */
+N  #endif /* __STDINT_DECLS */
+N
+N  #ifdef __cplusplus
+S    #ifndef __STDINT_NO_EXPORTS
+S      using ::std::int8_t;
+S      using ::std::int16_t;
+S      using ::std::int32_t;
+S      using ::std::int64_t;
+S      using ::std::uint8_t;
+S      using ::std::uint16_t;
+S      using ::std::uint32_t;
+S      using ::std::uint64_t;
+S      using ::std::int_least8_t;
+S      using ::std::int_least16_t;
+S      using ::std::int_least32_t;
+S      using ::std::int_least64_t;
+S      using ::std::uint_least8_t;
+S      using ::std::uint_least16_t;
+S      using ::std::uint_least32_t;
+S      using ::std::uint_least64_t;
+S      using ::std::int_fast8_t;
+S      using ::std::int_fast16_t;
+S      using ::std::int_fast32_t;
+S      using ::std::int_fast64_t;
+S      using ::std::uint_fast8_t;
+S      using ::std::uint_fast16_t;
+S      using ::std::uint_fast32_t;
+S      using ::std::uint_fast64_t;
+S      using ::std::intptr_t;
+S      using ::std::uintptr_t;
+S      using ::std::intmax_t;
+S      using ::std::uintmax_t;
+S    #endif
+N  #endif /* __cplusplus */
+N
+N#undef __INT64
+N#undef __LONGLONG
+N
+N#endif /* __stdint_h */
+N
+N/* end of stdint.h */
+L 5 "..\..\..\..\common\include\types.h" 2
+N#include <stdbool.h>
+L 1 "F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h" 1
+N/* stdbool.h: ISO/IEC 9899:1999 (C99), section 7.16 */
+N
+N/* Copyright (C) ARM Ltd., 2002
+N * All rights reserved
+N * RCS $Revision$
+N * Checkin $Date$
+N * Revising $Author: drodgman $
+N */
+N
+N#ifndef __bool_true_false_are_defined
+N#define __bool_true_false_are_defined 1
+N#define __ARMCLIB_VERSION 5060037
+N
+N  #ifndef __cplusplus /* In C++, 'bool', 'true' and 'false' and keywords */
+N    #define bool _Bool
+N    #define true 1
+N    #define false 0
+N  #else
+S    #ifdef __GNUC__
+S      /* GNU C++ supports direct inclusion of stdbool.h to provide C99
+S         compatibility by defining _Bool */
+S      #define _Bool bool
+S    #endif
+N  #endif
+N
+N#endif /* __bool_true_false_are_defined */
+N
+L 6 "..\..\..\..\common\include\types.h" 2
+N
+N//#if TARGET_SCPU
+N#define BS              0x08
+N#define ESC				27
+N
+N#ifndef NULL
+N#define NULL    0
+N#endif
+N
+N#ifndef ENABLE
+N#define ENABLE  1
+N#endif
+N
+N#ifndef DISABLE
+N#define DISABLE 0
+N#endif
+N
+N#ifndef FALSE
+N#define FALSE   0
+N#endif
+N
+N#ifndef TRUE
+N#define TRUE    1
+N#endif
+N#if 0
+Stypedef int bool;
+S#define true 1
+S#define false 0
+N#endif
+N/* type define */
+N	typedef unsigned long long 		UINT64;
+N	typedef long long 				INT64;
+N	typedef	unsigned int			UINT32;
+N	typedef	int						INT32;
+N	typedef	unsigned short			UINT16;
+N	typedef	short					INT16;
+N	typedef unsigned char			UINT8;
+N	typedef char					INT8;
+N	typedef unsigned char			BOOL;
+N
+N	typedef unsigned char           u8_t;
+N	typedef unsigned short          u16_t;
+N	typedef unsigned long           u32_t;
+N	typedef unsigned long long		u64_t;
+N
+N	typedef unsigned char 			uchar;
+N
+N    typedef char                    s8;
+N	typedef short                   s16;
+N    typedef int                     s32;
+N    typedef long long               s64;
+N
+N    typedef unsigned char           u8;
+N	typedef unsigned short          u16;
+N    typedef unsigned int            u32;
+N    typedef unsigned long long      u64;
+N
+N#ifndef _SIZE_T
+N#define _SIZE_T
+Ntypedef unsigned int size_t;
+N#endif
+N
+N#ifndef _SSIZE_T
+N#define _SSIZE_T
+Ntypedef long ssize_t;
+N#endif
+N
+Ntypedef INT8          INT8S;
+Ntypedef UINT8         INT8U;
+Ntypedef INT16         INT16S;
+Ntypedef UINT16        INT16U;
+Ntypedef INT32         INT32S;
+Ntypedef UINT32        INT32U;
+N
+N
+Ntypedef unsigned char                   byte;
+Ntypedef unsigned short                  word;
+Ntypedef unsigned long int               dword;
+N
+N//#endif
+N
+N#endif //TYPES_H
+L 2 "..\..\..\..\scpu\drivers\src\kdp520_flash.c" 2
+N#include "framework/utils.h"
+L 1 "..\..\..\..\scpu\framework\include\framework/utils.h" 1
+N#ifndef __UTILS_H__
+N#define __UTILS_H__
+N
+N
+N#define UNUSED_VARIABLE(x) ((void)(x))
+N
+N#define GET_MIN(x, y) ({            \
+N    typeof(x) _min1 = (x);          \
+N    typeof(y) _min2 = (y);          \
+N    (void) (&_min1 == &_min2);      \
+N    _min1 < _min2 ? _min1 : _min2; })
+X#define GET_MIN(x, y) ({                typeof(x) _min1 = (x);              typeof(y) _min2 = (y);              (void) (&_min1 == &_min2);          _min1 < _min2 ? _min1 : _min2; })
+N
+N#define __round_mask(x, y) ((__typeof__(x))((y)-1))
+N#define ROUND_DOWN(x, y) ((x) & ~__round_mask(x, y))
+N#define ROUND_UP(x, y) ((((x) + (y - 1)) / y) * y)
+N#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+N
+N#define container_of(ptr, type, member) ({                  \
+N    const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
+N    (type *)( (char *)__mptr - offsetof(type,member) );})
+X#define container_of(ptr, type, member) ({                      const typeof( ((type *)0)->member ) *__mptr = (ptr);        (type *)( (char *)__mptr - offsetof(type,member) );})
+N
+N#endif
+L 3 "..\..\..\..\scpu\drivers\src\kdp520_flash.c" 2
+N#include "kdp520_flash.h"
+L 1 "..\..\..\..\scpu\drivers\include\kdp520_flash.h" 1
+N
+N/* -----------------------------------------------------------------------------
+N * Copyright (c) 2013-2014 ARM Ltd.
+N *
+N * This software is provided 'as-is', without any express or implied warranty.
+N * In no event will the authors be held liable for any damages arising from
+N * the use of this software. Permission is granted to anyone to use this
+N * software for any purpose, including commercial applications, and to alter
+N * it and redistribute it freely, subject to the following restrictions:
+N *
+N * 1. The origin of this software must not be misrepresented; you must not
+N *    claim that you wrote the original software. If you use this software in
+N *    a product, an acknowledgment in the product documentation would be
+N *    appreciated but is not required.
+N *
+N * 2. Altered source versions must be plainly marked as such, and must not be
+N *    misrepresented as being the original software.
+N *
+N * 3. This notice may not be removed or altered from any source distribution.
+N *
+N *
+N * $Date:        31. Mar 2014
+N * $Revision:    V2.00
+N *
+N * Project:      Flash Driver definitions
+N * -------------------------------------------------------------------------- */
+N
+N/* History:
+N *  Version 2.00
+N *    Renamed driver NOR -> Flash (more generic)
+N *    Non-blocking operation
+N *    Added Events, Status and Capabilities
+N *    Linked Flash information (GetInfo)
+N *  Version 1.11
+N *    Changed prefix ARM_DRV -> ARM_DRIVER
+N *  Version 1.10
+N *    Namespace prefix ARM_ added
+N *  Version 1.00
+N *    Initial release
+N */
+N
+N#ifndef __KDP520_FLASH_H__
+N#define __KDP520_FLASH_H__
+N
+N
+N
+N#endif /* __DRIVER_FLASH_H */
+N
+N
+L 4 "..\..\..\..\scpu\drivers\src\kdp520_flash.c" 2
+N
+N
+N
+N
+N#ifdef CFG_WINWOND_FLASH
+SUINT8 kdp520_flash_get_info(void)
+S{
+S	#define	SPI_Rx_SIZE		(5)
+S	UINT32 	nrx_buff_word_index = 0;
+S	UINT32	nrx_buff_word[ SPI_Rx_SIZE ];
+S	UINT32	ntemp =0;
+S
+S	//do
+S	if( st_flash_info.page_size_Bytes == 256
+S			&& st_flash_info.block_size_Bytes != 0 )
+S	{
+S		return 1;
+S	}
+S	kdp520_spi_switch_fail();
+S
+S	kdp520_flash_write_control(1);
+S
+S	kdp520_spi_set_commands( 0x00 , SPI020_11_CMD1, SPI020_11_CMD2, SPI020_11_CMD3 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(10);
+S
+S#if 0
+S	//reset chip
+S	kdp520_spi_set_commands( SPI020_66_CMD0 , SPI020_66_CMD1, SPI020_66_CMD2, SPI020_66_CMD3 );
+S	kdp520_spi_wait_command_complete();
+S	kdp520_spi_set_commands( SPI020_99_CMD0 , SPI020_99_CMD1, SPI020_99_CMD2, SPI020_99_CMD3 );
+S	kdp520_spi_wait_command_complete();
+S
+S	delay_ms(30);		//org 800
+S#endif
+S
+S#if 1		//
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands(SPI020_15_CMD0, SPI020_15_CMD1, SPI020_15_CMD2, SPI020_15_CMD3);
+S	spi020_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x01 );
+S	kdp520_spi_wait_command_complete();
+S
+S	kdp520_flash_write_control(1);
+S	//disable quad mode bit
+S	kdp520_spi_set_commands( 0x00 , SPI020_11_CMD1, SPI020_11_CMD2, SPI020_11_CMD3 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(30);   //delay_us(300);
+S
+S	//20191219 add
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands(SPI020_15_CMD0, SPI020_15_CMD1, SPI020_15_CMD2, SPI020_15_CMD3);
+S	spi020_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x01 );
+S	kdp520_spi_wait_command_complete();
+S    nrx_buff_word_index =0;
+S	kdp520_spi_set_commands(SPI020_35_CMD0, SPI020_35_CMD1, SPI020_35_CMD2, SPI020_35_CMD3);//bessel:wait interrupt instead of delay
+S	spi020_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x01 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(10);
+S
+S#endif
+S
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands(SPI020_15_CMD0, SPI020_15_CMD1, SPI020_15_CMD2, SPI020_15_CMD3);
+S	kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x01 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(10);
+S
+S	//check status
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands( 0x00 , SPI020_5A_CMD1, 0x04, SPI020_5A_CMD3);
+S	kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x04 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(10);
+S	st_flash_info.signature = FLASH_SIGNATURE;
+S
+S	//check
+S	if( nrx_buff_word[nrx_buff_word_index-1] != FLASH_SIGNATURE )
+S	{
+S		return 0;
+S	}
+S
+S	//get ptr
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands( 0x0C , SPI020_5A_CMD1, 0x01, SPI020_5A_CMD3);
+S	kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x01 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(10);
+S	st_flash_info.PTP = nrx_buff_word[nrx_buff_word_index-1] & 0XFF;
+S
+S	//get ID
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands( 0x10 , SPI020_5A_CMD1, 0x04, SPI020_5A_CMD3);
+S	kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x04 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(10);
+S	st_flash_info.ID = nrx_buff_word[nrx_buff_word_index-1] & 0XFFFFFFFF;
+S
+S	if( st_flash_info.ID== 0x00 || st_flash_info.ID==0xFF  )
+S	{
+S		nrx_buff_word_index =0;
+S		kdp520_spi_set_commands( SPI020_9F_CMD0 , SPI020_9F_CMD1, SPI020_9F_CMD2, SPI020_9F_CMD3 );
+S		kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, SPI020_9F_CMD2 );
+S		kdp520_spi_wait_command_complete();
+S		delay_ms(10);
+S		st_flash_info.ID = nrx_buff_word[nrx_buff_word_index-1] & 0xFF;
+S	}
+S
+S	//get 4K erase support
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands( st_flash_info.PTP + 0, SPI020_5A_CMD1, 0x01, SPI020_5A_CMD3);
+S	kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x01 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(10);
+S	st_flash_info.erase_4K_support = nrx_buff_word[nrx_buff_word_index-1] & 0x3;
+S
+S	//get size
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands( st_flash_info.PTP+4 , SPI020_5A_CMD1, 0x04, SPI020_5A_CMD3);
+S	kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x04 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(10);
+S	st_flash_info.flash_size_KByte = (nrx_buff_word[nrx_buff_word_index-1]>>10)>>3;
+S	ntemp = nrx_buff_word[nrx_buff_word_index-1]>>3;
+S
+S	//get sector size 0x1C
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands( st_flash_info.PTP+0x1C , SPI020_5A_CMD1, 0x01, SPI020_5A_CMD3);
+S	kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x01 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(10);
+S	st_flash_info.sector_size_Bytes = 1<<(nrx_buff_word[ nrx_buff_word_index-1 ]&0xFF);
+S	st_flash_info.total_sector_numbers = (ntemp / st_flash_info.sector_size_Bytes)+1;
+S
+S	//get sector size 0x20
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands( st_flash_info.PTP+0x20 , SPI020_5A_CMD1, 0x01, SPI020_5A_CMD3);
+S	kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x01 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(10);
+S	st_flash_info.block_size_Bytes = ( 1<<( nrx_buff_word[ nrx_buff_word_index-1 ] & 0xFF ) )/st_flash_info.sector_size_Bytes ;
+S
+S	//get page size
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands( st_flash_info.PTP+0x28 , SPI020_5A_CMD1, 0x01, SPI020_5A_CMD3);
+S	kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x01 );
+S	kdp520_spi_wait_command_complete();
+S	delay_ms(10);
+S	ntemp = nrx_buff_word[nrx_buff_word_index-1]&0xFF;
+S
+S#if 0
+S	//20191219 add
+S	nrx_buff_word_index =0;
+S	kdp520_spi_set_commands(SPI020_15_CMD0, SPI020_15_CMD1, SPI020_15_CMD2, SPI020_15_CMD3);
+S	kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x01 );
+S	kdp520_spi_wait_command_complete();
+Snrx_buff_word_index =0;
+S	kdp520_spi_set_commands(SPI020_35_CMD0, SPI020_35_CMD1, SPI020_35_CMD2, SPI020_35_CMD3);//bessel:wait interrupt instead of delay
+S	kdp520_spi_read_Rx_FIFO( nrx_buff_word, &nrx_buff_word_index, 0x01 );
+S	kdp520_spi_wait_command_complete();
+S
+S
+S#endif
+S
+S
+S	kdp520_spi_switch_org();
+S
+S	if( (ntemp>>4) == FLASH_PAGE_SIZE_256_CODE )
+S	{
+S		st_flash_info.page_size_Bytes = 256;
+S	}
+S	else
+S	{
+S		st_flash_info.page_size_Bytes = 0;
+S		return 0;
+S	}
+S
+S
+S	return 1;
+S}
+N#else
+N
+N
+N#endif
+N
+N
+N
+N
+N

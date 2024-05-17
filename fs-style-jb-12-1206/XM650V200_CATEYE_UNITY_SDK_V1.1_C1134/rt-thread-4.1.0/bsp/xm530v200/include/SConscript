@@ -1,0 +1,12 @@
+from building import *
+
+cwd  = GetCurrentDir()
+src = Split('''
+''')
+list = os.listdir(cwd)
+CPPPATH = [cwd, cwd+'/mpp', cwd+'/isp', cwd+'/comm', cwd+'/ia']
+objs = []
+
+group = DefineGroup('Include', src, depend = [''], CPPPATH = CPPPATH)
+
+Return('objs')

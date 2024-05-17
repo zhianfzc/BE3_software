@@ -1,0 +1,19 @@
+{
+   "AudioFerq" : "8K",
+   "Flip" : "ON",
+   "Format" : "H265",
+   "FrameSize" : "50",
+   "IaFaceWidth" : "740",
+   "Item" : "Default",
+   "JpgEncode" : "YUV420",
+   "JpgQfactor" : "75",
+   "Lens" : "RGB850_IR",
+   "Mirror" : "ON",
+   "Resolution" : "720P",
+   "Uac" : "ON",
+   "UsbMps" : "512",
+   "UsbTransfer" : "ISO",
+   "UsbVersion" : "2_0",
+   "VideoFps" : "20"
+}
+

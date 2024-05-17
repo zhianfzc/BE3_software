@@ -1,0 +1,30 @@
+<DataBase>
+  <!--                                    -->
+  <!-- Kneron Devices (Cortex-M4 devices) -->
+  <!--                                    -->
+  <Device>
+    <ChipInfo Vendor="Kneron Devices" Name="KL520-mozart"  WorkRAMAddr="0x10100000" WorkRAMSize="0x8000" Core="JLINK_CORE_CORTEX_M4"/>
+    <FlashBankInfo Name="SPI Flash" BaseAddr="0x00000000" MaxSize="0x02000000" Loader="Devices/Kneron/Mozart/KL520_Flash.FLM" LoaderType="FLASH_ALGO_TYPE_OPEN" AlwaysPresent="1"/>
+  </Device>
+  <Device>
+    <ChipInfo Vendor="Kneron Devices" Name="KL520-WB"  WorkRAMAddr="0x10100000" WorkRAMSize="0x8000" Core="JLINK_CORE_CORTEX_M4"/>
+    <FlashBankInfo Name="SPI Flash" BaseAddr="0x00000000" MaxSize="0x02000000" Loader="Devices/Kneron/Winbond/W25Q256JV.FLM" LoaderType="FLASH_ALGO_TYPE_OPEN" AlwaysPresent="1"/>
+  </Device>
+  <Device>
+    <ChipInfo Vendor="Kneron Devices" Name="KL520-GD"  WorkRAMAddr="0x10100000" WorkRAMSize="0x8000" Core="JLINK_CORE_CORTEX_M4"/>
+    <FlashBankInfo Name="SPI Flash" BaseAddr="0x00000000" MaxSize="0x02000000" Loader="Devices/Kneron/GigaDevice/GD25Q256.FLM" LoaderType="FLASH_ALGO_TYPE_OPEN" AlwaysPresent="1"/>
+  </Device>
+  <Device>
+    <ChipInfo Vendor="Kneron Devices" Name="KL520-GD-P"  WorkRAMAddr="0x10100000" WorkRAMSize="0x8000" Core="JLINK_CORE_CORTEX_M4"/>
+    <FlashBankInfo Name="SPI Flash" BaseAddr="0x00000000" MaxSize="0x02000000" Loader="Devices/Kneron/GigaDevice/GD25Q256p.FLM" LoaderType="FLASH_ALGO_TYPE_OPEN" AlwaysPresent="1"/>
+  </Device>
+  <Device>
+    <ChipInfo Vendor="Kneron Devices" Name="KL520-MX"  WorkRAMAddr="0x10100000" WorkRAMSize="0x8000" Core="JLINK_CORE_CORTEX_M4"/>
+    <FlashBankInfo Name="SPI Flash" BaseAddr="0x00000000" MaxSize="0x02000000" Loader="Devices/Kneron/Mxic/MX25Q256JV.FLM" LoaderType="FLASH_ALGO_TYPE_OPEN" AlwaysPresent="1"/>
+  </Device>
+  <Device><!-- Jeff add -->
+    <ChipInfo Vendor="Kneron Devices" Name="KL520-GD64M"  WorkRAMAddr="0x10100000" WorkRAMSize="0x8000" Core="JLINK_CORE_CORTEX_M4"/>
+    <FlashBankInfo Name="SPI Flash" BaseAddr="0x00000000" MaxSize="0x02000000" Loader="Devices/Kneron/GigaDevice/GD25S512_64M.FLM" LoaderType="FLASH_ALGO_TYPE_OPEN" AlwaysPresent="1"/>
+  </Device>
+    
+</DataBase>

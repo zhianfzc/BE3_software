@@ -1,0 +1,15 @@
+.\objects\media.o: ..\..\..\..\scpu\drivers\media\v2k_core\media.c
+.\objects\media.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\media.o: ..\..\..\..\common\include\types.h
+.\objects\media.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\media.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\media.o: ..\..\..\..\scpu\framework\include\framework/bitops.h
+.\objects\media.o: ..\..\..\..\scpu\framework\include\framework/utils.h
+.\objects\media.o: ..\..\..\..\scpu\framework\include\framework/v2k.h
+.\objects\media.o: ..\..\..\..\scpu\framework\include\framework/v2k_image.h
+.\objects\media.o: ..\..\..\..\scpu\framework\include\framework/framework_errno.h
+.\objects\media.o: ..\..\..\..\common\include\dbg.h
+.\objects\media.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\media.o: ..\..\..\..\common\include\ipc.h
+.\objects\media.o: ..\..\..\..\common\include\model_type.h
+.\objects\media.o: ..\..\..\..\common\include\model_res.h

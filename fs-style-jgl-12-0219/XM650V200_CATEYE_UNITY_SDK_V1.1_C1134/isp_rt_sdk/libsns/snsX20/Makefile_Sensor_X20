@@ -1,0 +1,50 @@
+SRC := snsX20
+
+
+ifeq ($(CONFIG_X20_IMX307),y)   
+CFLAGS_SENSOR += -DSENS_X20_IMX307
+LIB_OBJS += $(SRC)/imx307_cmos.o    \
+            $(SRC)/imx307_sensor_ctl.o 
+endif
+
+ifeq ($(CONFIG_X20_SC200AI),y)
+CFLAGS_SENSOR += -DSENS_X20_SC200AI
+LIB_OBJS += $(SRC)/sc200ai_cmos.o	\
+			$(SRC)/sc200ai_sensor_ctl.o 
+endif
+
+ifeq ($(CONFIG_X20_SC223A),y)
+CFLAGS_SENSOR += -DSENS_X20_SC223A
+LIB_OBJS += $(SRC)/sc223a_cmos.o	\
+			$(SRC)/sc223a_sensor_ctl.o 
+endif
+
+ifeq ($(CONFIG_X20_SC200AI),y)
+CFLAGS_SENSOR += -DSENS_X20_SC200AI
+LIB_OBJS += $(SRC)/sc200ai_cmos.o	\
+			$(SRC)/sc200ai_sensor_ctl.o 
+endif
+
+ifeq ($(CONFIG_X20_SC307E),y)
+CFLAGS_SENSOR += -DSENS_X20_SC307E
+LIB_OBJS += $(SRC)/sc307e_cmos.o	\
+			$(SRC)/sc307e_sensor_ctl.o 
+endif
+
+ifeq ($(CONFIG_X20_SC2335),y)
+CFLAGS_SENSOR += -DSENS_X20_SC2335
+LIB_OBJS += $(SRC)/sc2335_cmos.o	\
+			$(SRC)/sc2335_sensor_ctl.o 
+endif
+
+ifeq ($(CONFIG_X20_SC2336),y)
+CFLAGS_SENSOR += -DSENS_X20_SC2336
+LIB_OBJS += $(SRC)/sc2336_cmos.o	\
+			$(SRC)/sc2336_sensor_ctl.o 
+endif
+
+ifeq ($(CONFIG_X20_SC202CS),y)
+CFLAGS_SENSOR += -DSENS_X20_SC202CS
+LIB_OBJS += $(SRC)/sc202cs_cmos.o	\
+			$(SRC)/sc202cs_sensor_ctl.o 
+endif

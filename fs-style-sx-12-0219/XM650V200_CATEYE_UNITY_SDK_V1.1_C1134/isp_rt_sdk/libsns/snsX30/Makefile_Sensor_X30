@@ -1,0 +1,11 @@
+SRC := snsX30
+ifeq ($(CONFIG_X30_SC3335),y)   
+CFLAGS_SENSOR += -DSENS_X30_SC3335
+LIB_OBJS += $(SRC)/sc3335_cmos.o    \
+            $(SRC)/sc3335_sensor_ctl.o 
+endif
+ifeq ($(CONFIG_X30_SC3338),y)   
+CFLAGS_SENSOR += -DSENS_X30_SC3338
+LIB_OBJS += $(SRC)/sc3338_cmos.o    \
+            $(SRC)/sc3338_sensor_ctl.o 
+endif
