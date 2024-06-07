@@ -1,0 +1,15 @@
+SRC := snsX40
+
+
+ifeq ($(CONFIG_X40_SC401AI),y)	
+CFLAGS_SENSOR += -DSENS_X40_SC401AI
+LIB_OBJS += $(SRC)/sc401ai_cmos.o	\
+			$(SRC)/sc401ai_sensor_ctl.o 
+endif
+
+ifeq ($(CONFIG_X40_SC4336),y)	
+CFLAGS_SENSOR += -DSENS_X40_SC4336
+LIB_OBJS += $(SRC)/sc4336_cmos.o	\
+			$(SRC)/sc4336_sensor_ctl.o 
+endif
+
