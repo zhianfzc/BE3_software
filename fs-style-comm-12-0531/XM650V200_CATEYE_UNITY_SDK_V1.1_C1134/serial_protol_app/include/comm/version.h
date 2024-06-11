@@ -14,9 +14,9 @@ Copyright © zhian Tech Co., Ltd. 2022-2023. All rights reserved.
 	#define FIRMWARE_VERSION_ZA "BE3Y100_b231211"
 	#define FIRMWARE_VERSION_ZAPRD "ZF50S_BE3Y_V1.0.0_b231220"
 #else
-	#define FIRMWARE_VERSION "V1.1.3b"
-	#define FIRMWARE_VERSION_ZA "BE3113_b240607"
-	#define FIRMWARE_VERSION_ZAPRD "ZF50S_BE3_V1.1.3_b240607"
+	#define FIRMWARE_VERSION "ZAV01L"
+	#define FIRMWARE_VERSION_ZA "BE3_bZAV01L08_4611"
+	#define FIRMWARE_VERSION_ZAPRD "ZF50S_BE3_bZAV01L08_4611"
 #endif
 char g_version[32];
 char g_version_za[32];
