@@ -54,6 +54,7 @@ int usbd_set_address(const uint8_t addr);
  */
 uint8_t usbd_get_port_speed(const uint8_t port);
 
+void usbd_ep_reset(int num);
 /**
  * @brief configure and enable endpoint.
  *
