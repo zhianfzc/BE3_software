@@ -249,6 +249,10 @@ static int st_mod_to_host_reply(uint8_t nid, uint8_t reply_result)
 		case MID_FACERESET:
 			reply_len = sizeof(s_msg_reply_data);
 			break;
+		//fcz add
+		case MID_GETUSERINFO:
+			reply_len = sizeof(s_msg_reply_getuserinfo_data);
+			break;
 
 		case MID_GET_ALL_USERID:
 			reply_len = sizeof(s_msg_reply_all_userid_data) + sizeof(s_msg_reply_data);
@@ -469,6 +473,13 @@ static int st_mod_to_host_reply(uint8_t nid, uint8_t reply_result)
 		case MID_FACERESET:
 			printf("MID_FACERESET\n");
 			break;
+
+		case MID_GETUSERINFO:
+		{
+			printf("MID_GETUSERINFO\n");
+			s_msg_reply_getuserinfo_data *pst_getuserinfo_data = (s_msg_reply_getuserinfo_data *)pst_msg_reply->data;
+			break;
+		}
 
 		case MID_GET_ALL_USERID:
 		{
@@ -1430,6 +1441,24 @@ static int st_host_to_mod_mid(s_msg *pst_mod_recv_msg)
 
 			break;
 		}
+		//fcz add
+		case MID_GETUSERINFO:
+			printf("revc MID_GETUSERINFO\n");
+			USR_LIST_INFO_S *pst_usr_list_info = usr_list_info_get();
+			s_msg_getuserinfo_data *getuserinfo_data = (s_msg_getuserinfo_data *)pst_mod_recv_msg->data;
+			uint16_t getuserinfo_id = (uint16_t)getuserinfo_data->user_id_leb | (uint16_t)getuserinfo_data->user_id_heb << 8;
+			if (pst_usr_list_info->usr_num == 0 || pst_usr_list_info->usr_num == 0xff || getuserinfo_id < 1 || pst_usr_list_info->sub_usr_list[getuserinfo_id - 1].usr_sign == 0 || pst_usr_list_info->sub_usr_list[getuserinfo_id - 1].usr_sign == 0xff)
+			{
+				if (st_mod_to_host_mid(MID_REPLY, MID_GETUSERINFO, MR_FAILED4_UNKNOWNUSER) != 0)
+					MY_ERR_PRT("st_mod_to_host_mid", MY_ERRROR);
+			}
+			else
+			{
+				if (st_mod_to_host_mid(MID_REPLY, MID_GETUSERINFO, MR_SUCCESS) != 0)
+					MY_ERR_PRT("st_mod_to_host_mid", MY_ERRROR);
+			}
+			break;
+
 		case MID_FACERESET:
 			printf("recv MID_FACERESET\n");
 			g_five_input_face_direction = FACE_DIRECTION_UNDEFINE;

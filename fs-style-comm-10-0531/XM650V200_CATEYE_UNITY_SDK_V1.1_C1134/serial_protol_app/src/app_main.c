@@ -68,7 +68,7 @@ int app_main(void)
 	
 	//zcy add get version
 	//sprintf(g_tmp,"%s_%s%d_%d%s_%d",FIRMWARE_VERSION,sfrq,pst_config_info->CONFIG_INFO_RESOLUTION,pst_config_info->CONFIG_INFO_JPG_ENCODE,sf,pst_config_info->CONFIG_INFO_FLIP);
-	sprintf(g_tmp,"%s_%s%d_%dF%dJ%d_%d%s%d",FIRMWARE_VERSION,sfrq,pst_config_info->CONFIG_INFO_RESOLUTION,usbtag,pst_config_info->CONFIG_INFO_FRAME_SIZE,pst_config_info->CONFIG_INFO_JPG_QFACTOR,pst_config_info->CONFIG_INFO_JPG_ENCODE,sf,pst_config_info->CONFIG_INFO_FLIP);
+	sprintf(g_tmp, "%s%d_%dF%dJ%d_%d%s%d_%s", sfrq, pst_config_info->CONFIG_INFO_RESOLUTION, usbtag, pst_config_info->CONFIG_INFO_FRAME_SIZE, pst_config_info->CONFIG_INFO_JPG_QFACTOR, pst_config_info->CONFIG_INFO_JPG_ENCODE, sf, pst_config_info->CONFIG_INFO_FLIP, FIRMWARE_VERSION);
 	memcpy(g_version,g_tmp,32);
 	
 	memset(g_tmp,0,32);
