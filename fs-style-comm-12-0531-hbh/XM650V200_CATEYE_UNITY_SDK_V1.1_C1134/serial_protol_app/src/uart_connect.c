@@ -18,7 +18,7 @@ Copyright @XmSilicon Tech Co., Ltd. 2022-2022. All rights reserved.
 
 #define UART_PRT1  0 //zcy print uart rec
 #define UART_PRT  0 //zcy add for print 1,print 0 no print
-#define READY_LOOP 0 // loop send ready until get command ok
+#define READY_LOOP 1 // loop send ready until get command ok
 extern unsigned long long g_start_pts;
 extern rt_device_t serial;
 extern int st_get_jpg_save(unsigned char image_number, ST_SIZE_S *pst_pic_size, unsigned int *psend_image_buf_size, unsigned char **p_send_image_buf);
@@ -1781,7 +1781,7 @@ static int st_mod_recv_host_msg()
         	//printf("st_mod_recv_host_msg == %d and g_ready_tag= %d\n",ret,g_ready_tag);
         	#if READY_LOOP
         	if(g_ready_tag != 1000){
-			if(g_ready_tag >= 5){
+			if(g_ready_tag >= 2){
 				g_ready_tag =0;
 				st_mod_to_host_mid(MID_NOTE, NID_READY, MR_SUCCESS);//zcy add 
 			}
