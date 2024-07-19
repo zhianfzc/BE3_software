@@ -498,9 +498,12 @@ static int st_mod_to_host_reply(uint8_t nid, uint8_t reply_result)
 		case MID_GET_VERSION:
 		{
 			printf("MID_GET_VERSION\n");
-			s_msg_reply_version_data *pst_version_data = (s_msg_reply_version_data*)pst_msg_reply->data;
-			memcpy(pst_version_data->version_info, g_version, sizeof(g_version));
+			// s_msg_reply_version_data *pst_version_data = (s_msg_reply_version_data*)pst_msg_reply->data;
+			// memcpy(pst_version_data->version_info, g_version, sizeof(g_version));
 			//memcpy(pst_version_data->version_info, FIRMWARE_VERSION, sizeof(FIRMWARE_VERSION));
+			s_msg_reply_version_data *pst_version_data = (s_msg_reply_version_data *)pst_msg_reply->data;
+			// memcpy(pst_version_data->version_info, g_version_za, sizeof(g_version_za));
+			memcpy(pst_version_data->version_info, FIRMWARE_VERSION_ZAPRD, sizeof(FIRMWARE_VERSION_ZAPRD));
 			break;
 		}
 		case MID_GET_VERSION_ZA:
